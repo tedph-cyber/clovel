@@ -1,0 +1,645 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Rating } from '@/components/ui/rating';
+import { 
+  BookOpen, 
+  Heart,
+  Clock,
+  Trash2,
+  Grid,
+  List as ListIcon,
+  BookmarkPlus,
+  Search,
+  Filter,
+  SortAsc
+} from 'lucide-react';
+import { formatNumber, formatDate } from '@/lib/utils/formatters';
+
+interface LibraryNovel {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  cover_url?: string;
+  author: {
+    name: string;
+    slug: string;
+  };
+  genres: string[];
+  status: string;
+  rating: number;
+  rating_count: number;
+  chapter_count: number;
+  view_count: number;
+  updated_at: string;
+  added_to_library_at: string;
+  last_read_chapter?: number;
+  reading_progress?: number;
+  is_favorite: boolean;
+}
+
+export default function LibraryPage() {
+  const [novels, setNovels] = useState<LibraryNovel[]>([]);
+  const [filteredNovels, setFilteredNovels] = useState<LibraryNovel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filters and view options
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [progressFilter, setProgressFilter] = useState('all');
+  const [favoriteFilter, setFavoriteFilter] = useState(false);
+  const [sortBy, setSortBy] = useState('added_at');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/user/library');
+        if (!response.ok) {
+          throw new Error('Failed to fetch library');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setNovels(data.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch library:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load library');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLibrary();
+  }, []);
+
+  // Filter and sort novels
+  useEffect(() => {
+    let filtered = [...novels];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(novel =>
+        novel.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        novel.author.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(novel => novel.status === statusFilter);
+    }
+
+    // Progress filter
+    if (progressFilter !== 'all') {
+      switch (progressFilter) {
+        case 'unread':
+          filtered = filtered.filter(novel => !novel.last_read_chapter);
+          break;
+        case 'reading':
+          filtered = filtered.filter(novel => 
+            novel.last_read_chapter && 
+            novel.last_read_chapter < novel.chapter_count
+          );
+          break;
+        case 'completed':
+          filtered = filtered.filter(novel => 
+            novel.last_read_chapter === novel.chapter_count
+          );
+          break;
+      }
+    }
+
+    // Favorite filter
+    if (favoriteFilter) {
+      filtered = filtered.filter(novel => novel.is_favorite);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'author':
+          return a.author.name.localeCompare(b.author.name);
+        case 'rating':
+          return b.rating - a.rating;
+        case 'updated_at':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        case 'progress':
+          return (b.reading_progress || 0) - (a.reading_progress || 0);
+        default: // added_at
+          return new Date(b.added_to_library_at).getTime() - new Date(a.added_to_library_at).getTime();
+      }
+    });
+
+    setFilteredNovels(filtered);
+  }, [novels, searchQuery, statusFilter, progressFilter, favoriteFilter, sortBy]);
+
+  const handleRemoveFromLibrary = async (novelId: string) => {
+    try {
+      const response = await fetch(`/api/user/library/${novelId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setNovels(prev => prev.filter(novel => novel.id !== novelId));
+      }
+    } catch (err) {
+      console.error('Failed to remove from library:', err);
+    }
+  };
+
+  const handleToggleFavorite = async (novelId: string) => {
+    try {
+      const novel = novels.find(n => n.id === novelId);
+      if (!novel) return;
+
+      const response = await fetch(`/api/user/favorites/${novelId}`, {
+        method: novel.is_favorite ? 'DELETE' : 'POST'
+      });
+
+      if (response.ok) {
+        setNovels(prev => prev.map(n => 
+          n.id === novelId ? { ...n, is_favorite: !n.is_favorite } : n
+        ));
+      }
+    } catch (err) {
+      console.error('Failed to toggle favorite:', err);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'ongoing': return 'bg-blue-100 text-blue-800';
+      case 'hiatus': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getProgressText = (novel: LibraryNovel) => {
+    if (!novel.last_read_chapter) return 'Not started';
+    if (novel.last_read_chapter === novel.chapter_count) return 'Completed';
+    return `Chapter ${novel.last_read_chapter} / ${novel.chapter_count}`;
+  };
+
+  const getProgressPercentage = (novel: LibraryNovel) => {
+    if (!novel.last_read_chapter) return 0;
+    return Math.round((novel.last_read_chapter / novel.chapter_count) * 100);
+  };
+
+  const NovelGridCard = ({ novel }: { novel: LibraryNovel }) => (
+    <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1 relative">
+      <CardHeader className="pb-3">
+        <div className="aspect-[2/3] bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
+          {novel.cover_url ? (
+            <Image
+              src={novel.cover_url}
+              alt={novel.title}
+              width={120}
+              height={180}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="text-center p-4">
+              <BookOpen className="h-12 w-12 text-blue-400 mx-auto mb-2" />
+              <span className="text-xs text-gray-500 font-medium line-clamp-2">{novel.title}</span>
+            </div>
+          )}
+          
+          {/* Progress overlay */}
+          {novel.reading_progress && novel.reading_progress > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 text-center">
+              {getProgressPercentage(novel)}% complete
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="line-clamp-2 text-lg">
+              <Link 
+                href={`/novel/${novel.slug}`}
+                className="hover:text-blue-600 transition-colors"
+              >
+                {novel.title}
+              </Link>
+            </CardTitle>
+            <Link 
+              href={`/author/${novel.author.slug}`}
+              className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              by {novel.author.name}
+            </Link>
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToggleFavorite(novel.id)}
+            className="p-1"
+          >
+            <Heart 
+              className={`h-4 w-4 ${novel.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+            />
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-0">
+        <div className="flex flex-wrap gap-1 mb-3">
+          <Badge className={getStatusColor(novel.status)}>
+            {novel.status}
+          </Badge>
+          {novel.genres.slice(0, 2).map((genre) => (
+            <Badge key={genre} variant="outline" className="text-xs">
+              {genre}
+            </Badge>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Rating rating={novel.rating} size="sm" readonly showValue />
+            <span className="text-xs text-gray-500">({formatNumber(novel.rating_count)})</span>
+          </div>
+
+          <div className="text-sm">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-600">Progress:</span>
+              <span className="text-gray-900">{getProgressText(novel)}</span>
+            </div>
+            {novel.last_read_chapter && (
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${getProgressPercentage(novel)}%` }}
+                ></div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-gray-500">
+              Added {formatDate(novel.added_to_library_at)}
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleRemoveFromLibrary(novel.id)}
+              className="text-red-600 hover:text-red-700 p-1"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const NovelListCard = ({ novel }: { novel: LibraryNovel }) => (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-16 h-24 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden relative">
+              {novel.cover_url ? (
+                <Image
+                  src={novel.cover_url}
+                  alt={novel.title}
+                  width={64}
+                  height={96}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <BookOpen className="h-6 w-6 text-blue-400" />
+                </div>
+              )}
+              
+              {novel.reading_progress && novel.reading_progress > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 text-center">
+                  {getProgressPercentage(novel)}%
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <Link 
+                  href={`/novel/${novel.slug}`}
+                  className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-1"
+                >
+                  {novel.title}
+                </Link>
+                
+                <Link 
+                  href={`/author/${novel.author.slug}`}
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  by {novel.author.name}
+                </Link>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleToggleFavorite(novel.id)}
+                  className="p-1"
+                >
+                  <Heart 
+                    className={`h-4 w-4 ${novel.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveFromLibrary(novel.id)}
+                  className="text-red-600 hover:text-red-700 p-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Badge className={getStatusColor(novel.status)}>
+                {novel.status}
+              </Badge>
+              {novel.genres.slice(0, 3).map((genre) => (
+                <Badge key={genre} variant="outline" className="text-xs">
+                  {genre}
+                </Badge>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-6 mb-3 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <Rating rating={novel.rating} size="sm" readonly />
+                <span>({formatNumber(novel.rating_count)})</span>
+              </div>
+              <span>{formatNumber(novel.chapter_count)} chapters</span>
+              <span>Added {formatDate(novel.added_to_library_at)}</span>
+            </div>
+
+            <div className="mb-2">
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600">Reading Progress:</span>
+                <span className="text-gray-900">{getProgressText(novel)}</span>
+              </div>
+              {novel.last_read_chapter && (
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getProgressPercentage(novel)}%` }}
+                  ></div>
+                </div>
+              )}
+            </div>
+
+            {novel.last_read_chapter && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/novel/${novel.slug}/chapter-${novel.last_read_chapter + 1}`}>
+                  Continue Reading
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">My Library</h1>
+        <p className="text-xl text-gray-600">
+          Your personal collection of novels
+        </p>
+        {novels.length > 0 && (
+          <div className="mt-4">
+            <Badge variant="secondary" className="text-lg px-4 py-2">
+              {novels.length} novel{novels.length !== 1 ? 's' : ''} in library
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your library...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && novels.length === 0 && (
+        <div className="text-center py-12">
+          <BookmarkPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Your Library is Empty</h3>
+          <p className="text-gray-600 mb-6">
+            Start building your collection by adding novels to your library
+          </p>
+          <Button asChild>
+            <Link href="/search">Browse Novels</Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Library Content */}
+      {!loading && !error && novels.length > 0 && (
+        <>
+          {/* Search and Filters */}
+          <div className="mb-6 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search your library..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  <SortAsc className="h-4 w-4 text-gray-600" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="added_at">Recently Added</option>
+                    <option value="title">Title A-Z</option>
+                    <option value="author">Author A-Z</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="updated_at">Recently Updated</option>
+                    <option value="progress">Reading Progress</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <ListIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Filters Panel */}
+            {showFilters && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="hiatus">Hiatus</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Progress</label>
+                      <select
+                        value={progressFilter}
+                        onChange={(e) => setProgressFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="all">All Progress</option>
+                        <option value="unread">Unread</option>
+                        <option value="reading">Currently Reading</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Favorites</label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={favoriteFilter}
+                          onChange={(e) => setFavoriteFilter(e.target.checked)}
+                          className="mr-2"
+                        />
+                        Show only favorites
+                      </label>
+                    </div>
+
+                    <div className="flex items-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setStatusFilter('all');
+                          setProgressFilter('all');
+                          setFavoriteFilter(false);
+                          setSearchQuery('');
+                        }}
+                        className="w-full"
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Results */}
+          {filteredNovels.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Results Found</h3>
+              <p className="text-gray-600 mb-4">No novels match your current filters.</p>
+              <Button 
+                onClick={() => {
+                  setStatusFilter('all');
+                  setProgressFilter('all');
+                  setFavoriteFilter(false);
+                  setSearchQuery('');
+                }}
+                variant="outline"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
+            <div className={
+              viewMode === 'grid' 
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                : 'space-y-4'
+            }>
+              {filteredNovels.map((novel) => 
+                viewMode === 'grid' 
+                  ? <NovelGridCard key={novel.id} novel={novel} />
+                  : <NovelListCard key={novel.id} novel={novel} />
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
