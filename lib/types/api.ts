@@ -50,22 +50,33 @@ export interface NovelSearchResult {
   id: string;
   title: string;
   slug: string;
-  author: string;
-  authorSlug: string;
-  coverImage: string;
+  author: {                // ✅ Change from string to object
+    id: string;
+    name: string;
+    slug: string;
+    avatar_url: string;
+  };
+  // Remove authorSlug since it's now in author object
+  cover_url: string;       // ✅ Change from coverImage to cover_url
   description: string;
   rating: number;
-  totalChapters: number;
+  chapter_count: number;   // ✅ Change from totalChapters to chapter_count
   status: string;
   genres: string[];
-  updatedAt: string;
+  updated_at: string;      // ✅ Change from updatedAt to updated_at
+  // Add other fields from backend if needed
+  word_count?: number;
+  view_count?: number;
+  bookmark_count?: number;
+  created_at?: string;
+  published_at?: string;
 }
 
 export interface AuthorSearchResult {
   id: string;
   name: string;
   slug: string;
-  avatar?: string;
+  avatar_url?: string;     // ✅ Change from avatar to avatar_url
   bio?: string;
   totalNovels: number;
   isVerified: boolean;

@@ -188,7 +188,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading novels...</p>
           </div>
         </div>
@@ -220,14 +220,14 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Discover Your Next
-            <span className="text-blue-600"> Favorite Novel</span>
+            <span className="text-emerald-600"> Favorite Novel</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Dive into captivating stories from talented authors around the world. 
             Join our community of passionate readers and discover your next obsession.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
+            <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-orange-400 hover:from-emerald-600 hover:to-orange-500 text-white" asChild>
               <Link href="/search">
                 <BookOpen className="mr-2 h-5 w-5" />
                 Browse Novels
@@ -244,22 +244,22 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 mb-12">
+      <section className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-xl p-8 mb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           <div>
-            <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="text-3xl font-bold text-emerald-600 mb-2">
               {formatNumber(stats.totalNovels)}+
             </div>
             <div className="text-gray-700 font-medium">Novels Available</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-purple-600 mb-2">
+            <div className="text-3xl font-bold text-orange-500 mb-2">
               {formatNumber(stats.totalReaders)}+
             </div>
             <div className="text-gray-700 font-medium">Active Readers</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-green-600 mb-2">
+            <div className="text-3xl font-bold text-emerald-600 mb-2">
               {formatNumber(stats.totalAuthors)}+
             </div>
             <div className="text-gray-700 font-medium">Authors</div>

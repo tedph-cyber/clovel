@@ -115,7 +115,7 @@ export default function GenrePage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed': return 'bg-green-100 text-green-800';
-      case 'ongoing': return 'bg-blue-100 text-blue-800';
+      case 'ongoing': return 'bg-emerald-100 text-emerald-800';
       case 'hiatus': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -124,7 +124,7 @@ export default function GenrePage() {
   const NovelGridCard = ({ novel }: { novel: Novel }) => (
     <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
       <CardHeader className="pb-3">
-        <div className="aspect-[2/3] bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+        <div className="aspect-[2/3] bg-gradient-to-br from-emerald-50 to-orange-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
           {novel.cover_url ? (
             <Image
               src={novel.cover_url}
@@ -135,7 +135,7 @@ export default function GenrePage() {
             />
           ) : (
             <div className="text-center p-4">
-              <BookOpen className="h-12 w-12 text-blue-400 mx-auto mb-2" />
+              <BookOpen className="h-12 w-12 text-emerald-400 mx-auto mb-2" />
               <span className="text-xs text-gray-500 font-medium line-clamp-2">{novel.title}</span>
             </div>
           )}
@@ -143,14 +143,14 @@ export default function GenrePage() {
         <CardTitle className="line-clamp-2 text-lg">
           <Link 
             href={`/novel/${novel.slug}`}
-            className="hover:text-blue-600 transition-colors"
+            className="hover:text-emerald-600 transition-colors"
           >
             {novel.title}
           </Link>
         </CardTitle>
         <Link 
           href={`/author/${novel.author.slug}`}
-          className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+          className="text-sm text-gray-600 hover:text-emerald-600 transition-colors"
         >
           by {novel.author.name}
         </Link>

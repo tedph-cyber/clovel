@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from '@/lib/config/env';
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const response = await fetch(`${API_BASE_URL}/api/chapters/${id}/progress`, {
+    const response = await fetch(`${config.api.baseUrl}/api/chapters/${id}/progress`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +44,7 @@ export async function POST(
     const { id } = await params;
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/chapters/${id}/progress`, {
+    const response = await fetch(`${config.api.baseUrl}/api/chapters/${id}/progress`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

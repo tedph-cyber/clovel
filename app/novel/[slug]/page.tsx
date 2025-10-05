@@ -14,6 +14,7 @@ import {
 import { Badge } from "../../../components/ui/badge";
 import { Rating } from "../../../components/ui/rating";
 import {
+  CircleUserRound,
   BookOpen,
   Clock,
   Eye,
@@ -24,12 +25,13 @@ import {
   ChevronRight,
   Plus,
   Check,
+  Book,
 } from "lucide-react";
 import {
   formatNumber,
   formatDate,
   formatReadingTime,
-} from "../../../lib/utils/formatters";
+} from "@/lib/utils/formatters";
 
 interface NovelDetail {
   id: string;
@@ -147,9 +149,9 @@ export default function NovelDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px] md:min-h-full">
+        <div className="flex items-center justify-center md:min-h-[400px] min-h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading novel...</p>
           </div>
         </div>
@@ -180,11 +182,11 @@ export default function NovelDetailPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <Link href="/" className="hover:text-blue-600">
+        <Link href="/" className="hover:text-emerald-600">
           Home
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <Link href="/search" className="hover:text-blue-600">
+        <Link href="/search" className="hover:text-emerald-600">
           Novels
         </Link>
         <ChevronRight className="h-4 w-4" />
@@ -226,18 +228,8 @@ export default function NovelDetailPage() {
                   href={`/author/${novel.author.slug}`}
                   className="flex items-center gap-2 text-lg text-gray-700 hover:text-blue-600 transition-colors"
                 >
-                  {novel.author.avatar_url ? (
-                    <Image
-                      src={novel.author.avatar_url}
-                      alt={novel.author.name}
-                      width={24}
-                      height={24}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <User className="h-6 w-6" />
-                  )}
-                  {novel.author.name}
+                  <CircleUserRound className="h-5 w-5" />
+                  <span className="font-medium">{novel.author.name}</span>
                 </Link>
               </div>
 
@@ -331,9 +323,7 @@ export default function NovelDetailPage() {
                 <CardTitle>Chapters ({novel.chapter_count})</CardTitle>
                 {chapters.length > 0 && (
                   <Button asChild>
-                    <Link
-                      href={`/novel/${novel.slug}/${chapters[0].slug}`}
-                    >
+                    <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
                       Start Reading
                     </Link>
                   </Button>
@@ -357,7 +347,7 @@ export default function NovelDetailPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">
-                            Chapter {chapter.chapter_number}: {chapter.title}
+                            {chapter.title}
                           </h3>
                           <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                             <span className="flex items-center gap-1">
@@ -474,19 +464,7 @@ export default function NovelDetailPage() {
                   href={`/author/${novel.author.slug}`}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  {novel.author.avatar_url ? (
-                    <Image
-                      src={novel.author.avatar_url}
-                      alt={novel.author.name}
-                      width={48}
-                      height={48}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="h-6 w-6 text-gray-600" />
-                    </div>
-                  )}
+                  <CircleUserRound className="h-5 w-5" />
                   <div>
                     <h3 className="font-medium text-gray-900">
                       {novel.author.name}

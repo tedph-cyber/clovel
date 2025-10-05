@@ -184,7 +184,7 @@ export default function LibraryPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed': return 'bg-green-100 text-green-800';
-      case 'ongoing': return 'bg-blue-100 text-blue-800';
+      case 'ongoing': return 'bg-emerald-100 text-emerald-800';
       case 'hiatus': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -204,7 +204,7 @@ export default function LibraryPage() {
   const NovelGridCard = ({ novel }: { novel: LibraryNovel }) => (
     <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1 relative">
       <CardHeader className="pb-3">
-        <div className="aspect-[2/3] bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
+        <div className="aspect-[2/3] bg-gradient-to-br from-emerald-50 to-orange-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
           {novel.cover_url ? (
             <Image
               src={novel.cover_url}
@@ -215,7 +215,7 @@ export default function LibraryPage() {
             />
           ) : (
             <div className="text-center p-4">
-              <BookOpen className="h-12 w-12 text-blue-400 mx-auto mb-2" />
+              <BookOpen className="h-12 w-12 text-emerald-400 mx-auto mb-2" />
               <span className="text-xs text-gray-500 font-medium line-clamp-2">{novel.title}</span>
             </div>
           )}
@@ -233,7 +233,7 @@ export default function LibraryPage() {
             <CardTitle className="line-clamp-2 text-lg">
               <Link 
                 href={`/novel/${novel.slug}`}
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-emerald-600 transition-colors"
               >
                 {novel.title}
               </Link>
@@ -285,7 +285,7 @@ export default function LibraryPage() {
             {novel.last_read_chapter && (
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${getProgressPercentage(novel)}%` }}
                 ></div>
               </div>
@@ -406,7 +406,7 @@ export default function LibraryPage() {
               {novel.last_read_chapter && (
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${getProgressPercentage(novel)}%` }}
                   ></div>
                 </div>
@@ -447,7 +447,7 @@ export default function LibraryPage() {
       {loading && (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading your library...</p>
           </div>
         </div>
@@ -490,7 +490,7 @@ export default function LibraryPage() {
                 placeholder="Search your library..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
@@ -511,7 +511,7 @@ export default function LibraryPage() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="added_at">Recently Added</option>
                     <option value="title">Title A-Z</option>
@@ -551,7 +551,7 @@ export default function LibraryPage() {
                       <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="all">All Status</option>
                         <option value="ongoing">Ongoing</option>
@@ -565,7 +565,7 @@ export default function LibraryPage() {
                       <select
                         value={progressFilter}
                         onChange={(e) => setProgressFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="all">All Progress</option>
                         <option value="unread">Unread</option>

@@ -1,3 +1,5 @@
+import { config } from '@/lib/config/env';
+
 export const ROUTES = {
   HOME: '/',
   
@@ -33,7 +35,7 @@ export const ROUTES = {
 } as const;
 
 export const API_ROUTES = {
-  BASE_URL: 'http://localhost:8000',
+  BASE_URL: `${config.api.baseUrl}`,
   
   // Novel endpoints
   NOVELS: '/api/novels',

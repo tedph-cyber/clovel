@@ -1,20 +1,38 @@
 'use client'
 import Image from "next/image";
 import Link from "next/link";
-import { SearchIcon, House } from "lucide-react";
+import { SearchIcon, House, Menu, X, BookOpen, TrendingUp } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Pacifico } from "next/font/google";
 const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
 
 export default function Navbar() {
-      const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const router = useRouter();
 
-      const toggleMenu = () => {
-        setIsOpen(!isOpen);
-      };
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent, query: string) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  const handleMobileSearch = () => {
+    if (mobileSearchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(mobileSearchQuery.trim())}`);
+      setIsOpen(false); // Close mobile menu after search
+    }
+  };
 
   return (
-    <nav className="bg-white container mx-auto max-w-full border-gray-200 border-b shadow-lg text-center flex justify-between items-center text-sm text-gray-500 sticky top-0 z-10 sm:justify-around sm:items-center sm:p-2 sm:text-sm">
+    <nav className="bg-white/90 backdrop-blur-sm container mx-auto max-w-full border-emerald-100 border-b shadow-lg text-center flex justify-between items-center text-sm text-gray-600 sticky top-0 z-10 sm:justify-around sm:items-center sm:p-2 sm:text-sm">
       {/* image/logo */}
       <div className="flex items-center text-xl">
         <Link href="/" className="flex items-center">
@@ -26,52 +44,36 @@ export default function Navbar() {
             className="border rounded-lg"
           />
           {/* <img src="/logo.png" alt="Logo" className="h-8 mr-2" /> */}
-          <span className={pacifico.className}>Clovel</span>
+          <span className={`${pacifico.className} text-emerald-600`}>Clovel</span>
         </Link>
       </div>
+      {/* Desktop Search */}
       <div className="hidden md:flex">
-        <form action="/search" method="post">
+        <form onSubmit={(e) => handleSearchSubmit(e, searchQuery)}>
           <input
             type="search"
             name="search"
             id="search"
-            className="p-1 border-gray-200 border rounded-full"
-            placeholder=" Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="p-2 border-emerald-200 border rounded-full focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+            placeholder="Search novels, authors..."
           />
         </form>
       </div>
       {/* Mobile Menu Button */}
-      <div className="md:hidden flex space-x-2 text-sm">
-        <SearchIcon />
-        <button onClick={toggleMenu} className=" focus:outline-none">
+      <div className="md:hidden flex items-center space-x-3">
+        <Link href="/search" className="p-2 hover:bg-emerald-50 rounded-full transition-colors">
+          <SearchIcon className="h-5 w-5 text-emerald-600" />
+        </Link>
+        <button 
+          onClick={toggleMenu} 
+          className="p-2 hover:bg-emerald-50 rounded-full transition-colors focus:outline-none"
+        >
           {isOpen ? (
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="h-6 w-6 text-emerald-600" />
           ) : (
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <Menu className="h-6 w-6 text-emerald-600" />
           )}
         </button>
       </div>
@@ -79,29 +81,129 @@ export default function Navbar() {
       {/* Sidebar Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed left-0 top-15 w-1/3 inset-0 bg-black/5 z-40 sm:hidden"
+          className="fixed inset-0 bg-white md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="fixed top-15 right-0 flex flex-col  space-y-2 w-2/3 h-screen sm:h-screen px-4 pt-4 sm:pt-0 bg-white">
-          <Link href="/" className="block text-black hover:text-white py-2">
-            <House /> Home
-          </Link>
-          <Link
-            href="/about"
-            className="block text-black hover:text-white py-2"
-          >
-            Genres
-          </Link>
-          <Link
-            href="/contact"
-            className="block text-black hover:text-white py-2"
-          >
-            Rankings?
-          </Link>
+        <div className="fixed top-0 right-0 h-full w-full bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out">
+          {/* Mobile Menu Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Image
+                src="/clovel.png"
+                alt="Logo"
+                height={24}
+                width={45}
+                className="border rounded-lg mr-2"
+              />
+              <span className={`${pacifico.className} text-emerald-600 text-lg`}>Clovel</span>
+            </div>
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="p-4 border-b border-gray-200">
+            <form onSubmit={(e) => handleSearchSubmit(e, mobileSearchQuery)} className="flex gap-2">
+              <input
+                type="search"
+                value={mobileSearchQuery}
+                onChange={(e) => setMobileSearchQuery(e.target.value)}
+                className="flex-1 p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:outline-none"
+                placeholder="Search novels, authors..."
+              />
+              <button
+                type="submit"
+                className="px-4 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <SearchIcon className="h-5 w-5" />
+              </button>
+            </form>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex flex-col py-4">
+            <Link 
+              href="/" 
+              className="flex items-center px-6 py-4 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <House className="h-5 w-5 mr-3" />
+              <span className="font-medium">Home</span>
+            </Link>
+            
+            <Link 
+              href="/search" 
+              className="flex items-center px-6 py-4 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <SearchIcon className="h-5 w-5 mr-3" />
+              <span className="font-medium">Browse Novels</span>
+            </Link>
+            
+            <Link 
+              href="/library" 
+              className="flex items-center px-6 py-4 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <BookOpen className="h-5 w-5 mr-3" />
+              <span className="font-medium">My Library</span>
+            </Link>
+            
+            <Link 
+              href="/reading-list" 
+              className="flex items-center px-6 py-4 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <TrendingUp className="h-5 w-5 mr-3" />
+              <span className="font-medium">Reading List</span>
+            </Link>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-4 mx-6"></div>
+
+            {/* Genre Links */}
+            <div className="px-6 py-2">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Popular Genres</h3>
+              <div className="space-y-2">
+                <Link 
+                  href="/genre/fantasy" 
+                  className="block py-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Fantasy
+                </Link>
+                <Link 
+                  href="/genre/romance" 
+                  className="block py-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Romance
+                </Link>
+                <Link 
+                  href="/genre/action" 
+                  className="block py-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Action
+                </Link>
+                <Link 
+                  href="/genre/mystery" 
+                  className="block py-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Mystery
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </nav>

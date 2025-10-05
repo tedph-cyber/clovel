@@ -23,10 +23,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
     
     const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
+      primary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500',
       secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-      outline: 'border border-gray-300 bg-transparent hover:bg-gray-50',
-      ghost: 'hover:bg-gray-100',
+      outline: 'border border-emerald-300 bg-transparent hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800',
+      ghost: 'hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800',
       destructive: 'bg-red-600 text-white hover:bg-red-700'
     };
     
@@ -44,10 +44,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     );
 
-    if (asChild) {
-      return React.cloneElement(children as React.ReactElement, {
-        className: cn(classNames, (children as React.ReactElement).props?.className),
-        ...props
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as any, {
+        className: cn(classNames, (children as any).props?.className),
       });
     }
 

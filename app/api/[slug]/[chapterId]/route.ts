@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from '@/lib/config/env';
 
 export async function GET(
   request: NextRequest,
@@ -13,7 +12,7 @@ export async function GET(
     const chapterNumber = chapterId.replace(/^chapter-/, '');
     
     // Call backend API with novel title (slug) and chapter number
-    const response = await fetch(`${API_BASE_URL}/api/${slug}/chapter-${chapterNumber}`, {
+    const response = await fetch(`${config.api.baseUrl}/api/${slug}/chapter-${chapterNumber}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

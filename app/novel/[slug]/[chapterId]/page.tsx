@@ -219,7 +219,7 @@ export default function ChapterPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading chapter...</p>
           </div>
         </div>
@@ -307,7 +307,7 @@ export default function ChapterPage() {
             {/* Progress Bar */}
             <div className="h-1 bg-gray-200">
               <div
-                className="h-full bg-blue-600 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-emerald-500 to-orange-400 transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>

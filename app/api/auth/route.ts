@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from '@/lib/config/env';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+    const response = await fetch(`${config.api.baseUrl}/api/auth/profile`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +67,7 @@ export async function GET(request: NextRequest) {
 }
 
 async function handleLogin(credentials: { email: string; password: string }) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+  const response = await fetch(`${config.api.baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,7 +100,7 @@ async function handleRegister(userData: {
   password: string;
   confirmPassword: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+  const response = await fetch(`${config.api.baseUrl}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -143,7 +142,7 @@ async function handleLogout() {
 }
 
 async function handleRefreshToken(data: { refreshToken: string }) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+  const response = await fetch(`${config.api.baseUrl}/api/auth/refresh`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

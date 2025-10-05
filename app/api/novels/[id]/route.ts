@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from '@/lib/config/env';
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const response = await fetch(`${API_BASE_URL}/api/novels/${id}`, {
+    const response = await fetch(`${config.api.baseUrl}/api/novels/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -39,13 +38,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/novels/${id}`, {
+    const response = await fetch(`${config.api.baseUrl}/api/novels/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -70,12 +69,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
-    const response = await fetch(`${API_BASE_URL}/api/novels/${id}`, {
+    const { id } = await params;
+
+    const response = await fetch(`${config.api.baseUrl}/api/novels/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

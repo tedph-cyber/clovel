@@ -16,7 +16,7 @@ export default function MainLayout({
     <div
       className={`${outfit.variable} min-h-screen flex flex-col justify-center items-center p-2`}
     >
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 min-h-full">{children}</main>
     </div>
   );
 }

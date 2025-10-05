@@ -59,11 +59,16 @@ interface Novel {
   updated_at: string;
 }
 
+interface AuthorResponse {
+  author: Author;
+  novels: Novel[];
+}
+
 export default function AuthorPage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const [author, setAuthor] = useState<Author | null>(null);
+  const [author, setAuthor] = useState<AuthorResponse | null>(null);
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,13 +116,14 @@ export default function AuthorPage() {
       fetchAuthorData();
     }
   }, [slug, sortBy]);
+  {console.log(author)}
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
         return "bg-green-100 text-green-800";
       case "ongoing":
-        return "bg-blue-100 text-blue-800";
+        return "bg-emerald-100 text-emerald-800";
       case "hiatus":
         return "bg-yellow-100 text-yellow-800";
       default:
@@ -145,10 +151,10 @@ export default function AuthorPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
+      <div className="container mx-auto px-4 py-8 min-h-full">
+        <div className="flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading author...</p>
           </div>
         </div>
@@ -187,7 +193,7 @@ export default function AuthorPage() {
           Authors
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-gray-900">{author.name}</span>
+        <span className="text-gray-900">{author.author.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -197,23 +203,13 @@ export default function AuthorPage() {
             {/* Author Card */}
             <Card>
               <CardContent className="p-6">
-                <div className="text-center">
+                <div className="text-center py-2">
                   {/* Avatar */}
                   <div className="w-32 h-32 mx-auto mb-4 relative">
-                    {author.avatar_url ? (
-                      <Image
-                        src={author.avatar_url}
-                        alt={author.name}
-                        width={128}
-                        height={128}
-                        className="rounded-full object-cover w-full h-full"
-                      />
-                    ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
                         <User className="h-16 w-16 text-blue-400" />
                       </div>
-                    )}
-                    {author.is_verified && (
+                    {author.author.is_verified && (
                       <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1">
                         <svg
                           className="w-4 h-4"
@@ -231,16 +227,16 @@ export default function AuthorPage() {
                   </div>
 
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                    {author.name}
-                    {author.is_verified && (
+                    {author.author.name}
+                    {author.author.is_verified && (
                       <span className="ml-2 text-blue-500">✓</span>
                     )}
                   </h1>
 
-                  {author.nationality && (
+                  {author.author.nationality && (
                     <div className="flex items-center justify-center gap-1 text-gray-600 mb-4">
                       <MapPin className="h-4 w-4" />
-                      <span>{author.nationality}</span>
+                      <span>{author.author.nationality}</span>
                     </div>
                   )}
 
@@ -256,19 +252,19 @@ export default function AuthorPage() {
                   <div className="grid grid-cols-3 gap-4 text-center border-t pt-4">
                     <div>
                       <div className="text-xl font-bold text-blue-600">
-                        {formatNumber(author.total_novels)}
+                        {formatNumber(author.novels.length)}
                       </div>
                       <div className="text-sm text-gray-600">Novels</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-green-600">
-                        {formatNumber(author.total_followers)}
+                        {formatNumber(author.author.total_followers)}
                       </div>
                       <div className="text-sm text-gray-600">Followers</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-purple-600">
-                        {formatNumber(author.total_views)}
+                        {formatNumber(author.author.total_views)}
                       </div>
                       <div className="text-sm text-gray-600">Views</div>
                     </div>
@@ -278,14 +274,14 @@ export default function AuthorPage() {
             </Card>
 
             {/* Bio */}
-            {author.bio && (
+            {author.author.bio && (
               <Card>
                 <CardHeader>
                   <CardTitle>About</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {author.bio}
+                    {author.author.bio}
                   </p>
                 </CardContent>
               </Card>
@@ -299,14 +295,14 @@ export default function AuthorPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="h-4 w-4" />
-                  <span>Joined {formatDate(author.joined_at)}</span>
+                  <span>Joined {formatDate(author.author.joined_at)}</span>
                 </div>
 
-                {author.website && (
+                {author.author.website && (
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-gray-600" />
                     <a
-                      href={author.website}
+                      href={author.author.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 text-sm"
@@ -317,13 +313,13 @@ export default function AuthorPage() {
                 )}
 
                 {/* Social Links */}
-                {Object.entries(author.social_links || {}).length > 0 && (
+                {Object.entries(author.author.social_links || {}).length > 0 && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">
                       Social Media
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries(author.social_links).map(
+                      {Object.entries(author.author.social_links).map(
                         ([platform, url]) => {
                           const Icon = getSocialIcon(platform);
                           return (
@@ -352,7 +348,7 @@ export default function AuthorPage() {
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              Novels ({author.total_novels})
+              Novels ({author.novels.length})
             </h2>
             <select
               value={sortBy}
@@ -387,15 +383,15 @@ export default function AuthorPage() {
                   <CardContent className="p-6">
                     <div className="flex gap-4">
                       {/* Cover */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 py-4">
                         <div className="w-20 h-28 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden">
                           {novel.cover_url ? (
                             <Image
                               src={novel.cover_url}
                               alt={novel.title}
-                              width={80}
-                              height={112}
-                              className="object-cover w-full h-full"
+                              width={96}
+                              height={120}
+                              className="object-cover aspect-auto"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
@@ -406,7 +402,7 @@ export default function AuthorPage() {
                       </div>
 
                       {/* Novel Info */}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 py-4">
                         <Link
                           href={`/novel/${novel.slug}`}
                           className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-1"
@@ -433,7 +429,7 @@ export default function AuthorPage() {
                           ))}
                         </div>
 
-                        <div className="flex items-center gap-6 mt-4 text-sm text-gray-600">
+                        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1">
                             <Rating rating={novel.rating} size="sm" readonly />
                             <span>({formatNumber(novel.rating_count)})</span>
@@ -448,7 +444,7 @@ export default function AuthorPage() {
                             <Eye className="h-4 w-4" />
                             <span>{formatNumber(novel.view_count)} views</span>
                           </div>
-                          <span>Updated {formatDate(novel.updated_at)}</span>
+                          <span className="w-full sm:w-auto">Updated {formatDate(novel.updated_at)}</span>
                         </div>
                       </div>
                     </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { config } from '@/lib/config/env';
 
 export async function GET(
   request: NextRequest,
@@ -10,9 +11,9 @@ export async function GET(
     const sortBy = searchParams.get('sort_by') || 'newest';
     
     // Forward the request to your FastAPI backend
-    // const backendUrl = `http://localhost:8000/api/authors/${slug}/novels?sort_by=${sortBy}`;
+    // const backendUrl = `${config.api.baseUrl}/api/authors/${slug}/novels?sort_by=${sortBy}`;
     // commented it out to remove the sort by cos BE doesnt receive that
-    const backendUrl = `http://localhost:8000/api/authors/${slug}`;
+    const backendUrl = `${config.api.baseUrl}/api/authors/${slug}`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

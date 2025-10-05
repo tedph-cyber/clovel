@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { config } from '@/lib/config/env';
 
 export async function POST(
   request: NextRequest,
@@ -13,7 +12,7 @@ export async function POST(
     const chapterNumber = chapterId.replace(/^chapter-/, '');
     
     // Call backend API to track chapter view
-    const response = await fetch(`${API_BASE_URL}/api/${slug}/${chapterNumber}/view`, {
+    const response = await fetch(`${config.api.baseUrl}/api/${slug}/${chapterNumber}/view`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

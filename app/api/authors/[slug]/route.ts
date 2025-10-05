@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { config } from '@/lib/config/env';
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
     const { slug } = await params;
     
     // Forward the request to your FastAPI backend
-    const backendUrl = `http://localhost:8000/api/authors/${slug}`;
+    const backendUrl = `${config.api.baseUrl}/api/authors/${slug}`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${indieFlower.variable} ${sanchez.variable} ${righteous.variable} font-sans bg-gray-100 justify-center items-center antialiased`}
+        className={`${outfit.variable} ${indieFlower.variable} ${sanchez.variable} ${righteous.variable} font-sans bg-gradient-to-br from-emerald-50 via-white to-orange-50 min-h-screen antialiased`}
       >
         <Navbar />
         {children}

@@ -11,11 +11,13 @@ import type {
 export class SearchApi {
   // General search
   static async search(params: SearchParams): Promise<SearchResult> {
-    const response = await apiClient.get<ApiResponse<SearchResult>>(
+    const response = await apiClient.get<SearchResult>(
       API_ROUTES.SEARCH,
       params
     );
-    return handleApiResponse(response) as SearchResult;
+    console.log('API response:', response);
+    // Return response directly since search API returns raw data
+    return response;
   }
 
   // Search novels only
