@@ -5,22 +5,14 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/ui/rating";
 import {
   User,
   BookOpen,
-  Calendar,
-  MapPin,
-  Globe,
-  Twitter,
-  Facebook,
-  Instagram,
-  Users,
-  Eye,
-  Heart,
   ChevronRight,
+  Home,
 } from "lucide-react";
 import { formatNumber, formatDate } from "@/lib/utils/formatters";
 import { searchNovels, Novel } from "@/lib/db/novels";
@@ -36,9 +28,6 @@ export default function AuthorPage() {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "rating">(
-    "newest"
-  );
 
   useEffect(() => {
     const fetchAuthorNovels = async () => {
@@ -49,78 +38,35 @@ export default function AuthorPage() {
         // Search for novels by this author name
         const novelsData = await searchNovels(authorName, 100);
         
-        if (!novelsData || novelsData.length === 0) {
+        // Filter to only novels by this exact author
+        const filteredNovels = novelsData.filter(
+          novel => novel.author.toLowerCase() === authorName.toLowerCase()
+        );
+        
+        if (filteredNovels.length === 0) {
           setError('No novels found for this author');
           setNovels([]);
           return;
         }
 
-        // Sort novels based on selected sort
-        if (authorData.novels) {
-          switch (sortBy) {
-            case 'popular':
-              authorData.novels.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
-              break;
-            case 'rating':
-              authorData.novels.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0));
-              break;
-            case 'newest':
-            default:
-              // Already sorted by updated_at in query
-              break;
-          }
-        }
-
-        setAuthor(authorData);
+        setNovels(filteredNovels);
       } catch (err) {
-        console.error('Failed to fetch author:', err);
-        setError(err instanceof Error ? err.message : "Failed to load author");
+        console.error('Failed to fetch author novels:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load author novels');
       } finally {
         setLoading(false);
       }
     };
 
     if (slug) {
-      fetchAuthorData();
+      fetchAuthorNovels();
     }
-  }, [slug, sortBy]);
-  {console.log(author)}
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "ongoing":
-        return "bg-emerald-100 text-emerald-800";
-      case "hiatus":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const handleFollow = async () => {
-    // Implement follow functionality
-    setIsFollowing(!isFollowing);
-  };
-
-  const getSocialIcon = (platform: string) => {
-    switch (platform) {
-      case "twitter":
-        return Twitter;
-      case "facebook":
-        return Facebook;
-      case "instagram":
-        return Instagram;
-      default:
-        return Globe;
-    }
-  };
+  }, [slug, authorName]);
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 min-h-full">
-        <div className="flex items-center justify-center">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading author...</p>
@@ -130,19 +76,19 @@ export default function AuthorPage() {
     );
   }
 
-  if (error || !author) {
+  if (error || novels.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-medium text-gray-900 mb-2">
-            Author Not Found
+            No Novels Found
           </h2>
           <p className="text-gray-600 mb-4">
-            {error || "The author you're looking for doesn't exist."}
+            {error || `No novels found by ${authorName}`}
           </p>
           <Button asChild variant="outline">
-            <Link href="/search">Browse Authors</Link>
+            <Link href="/search">Browse All Novels</Link>
           </Button>
         </div>
       </div>
@@ -153,274 +99,93 @@ export default function AuthorPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <Link href="/" className="hover:text-blue-600">
-          Home
+        <Link href="/" className="hover:text-emerald-600">
+          <Home className="h-4 w-4" />
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <Link href="/authors" className="hover:text-blue-600">
+        <Link href="/search" className="hover:text-emerald-600">
           Authors
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-gray-900">{author.author.name}</span>
+        <span className="text-gray-900">{authorName}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Author Info Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-8 space-y-6">
-            {/* Author Card */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center py-2">
-                  {/* Avatar */}
-                  <div className="w-32 h-32 mx-auto mb-4 relative">
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                        <User className="h-16 w-16 text-blue-400" />
-                      </div>
-                    {author.author.is_verified && (
-                      <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                    )}
+      {/* Author Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <User className="h-12 w-12 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              {authorName}
+            </h1>
+            <div className="flex items-center gap-4 text-gray-600">
+              <span className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                {formatNumber(novels.length)} {novels.length === 1 ? 'Novel' : 'Novels'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Novels Grid */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Novels</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {novels.map((novel) => (
+            <Link key={novel.id} href={`/novel/${novel.slug}`}>
+              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <div className="aspect-[2/3] bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
+                  {novel.cover_url ? (
+                    <Image
+                      src={novel.cover_url}
+                      alt={novel.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <BookOpen className="h-16 w-16 text-blue-400" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-white/90 text-gray-900">
+                      {novel.status}
+                    </Badge>
                   </div>
-
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                    {author.author.name}
-                    {author.author.is_verified && (
-                      <span className="ml-2 text-blue-500">✓</span>
-                    )}
-                  </h1>
-
-                  {author.author.nationality && (
-                    <div className="flex items-center justify-center gap-1 text-gray-600 mb-4">
-                      <MapPin className="h-4 w-4" />
-                      <span>{author.author.nationality}</span>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {novel.title}
+                  </h3>
+                  
+                  {novel.rating && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Rating rating={novel.rating} size="sm" readonly />
+                      <span className="text-sm text-gray-600">
+                        {novel.rating.toFixed(1)}
+                      </span>
                     </div>
                   )}
 
-                  <Button
-                    onClick={handleFollow}
-                    className="w-full mb-4"
-                    variant={isFollowing ? "outline" : "primary"}
-                  >
-                    {isFollowing ? "Following" : "Follow Author"}
-                  </Button>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 text-center border-t pt-4">
-                    <div>
-                      <div className="text-xl font-bold text-blue-600">
-                        {formatNumber(author.novels.length)}
-                      </div>
-                      <div className="text-sm text-gray-600">Novels</div>
-                    </div>
-                    <div>
-                      <div className="text-xl font-bold text-green-600">
-                        {formatNumber(author.author.total_followers)}
-                      </div>
-                      <div className="text-sm text-gray-600">Followers</div>
-                    </div>
-                    <div>
-                      <div className="text-xl font-bold text-purple-600">
-                        {formatNumber(author.author.total_views)}
-                      </div>
-                      <div className="text-sm text-gray-600">Views</div>
-                    </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{novel.total_chapters || 0} chapters</span>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Bio */}
-            {author.author.bio && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>About</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {author.author.bio}
-                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {novel.genres.slice(0, 2).map((genre) => (
+                      <Badge key={genre} variant="secondary" className="text-xs">
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Social Links & Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>Joined {formatDate(author.author.joined_at)}</span>
-                </div>
-
-                {author.author.website && (
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-gray-600" />
-                    <a
-                      href={author.author.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      Visit Website
-                    </a>
-                  </div>
-                )}
-
-                {/* Social Links */}
-                {Object.entries(author.author.social_links || {}).length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Social Media
-                    </h4>
-                    <div className="space-y-2">
-                      {Object.entries(author.author.social_links).map(
-                        ([platform, url]) => {
-                          const Icon = getSocialIcon(platform);
-                          return (
-                            <a
-                              key={platform}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
-                            >
-                              <Icon className="h-4 w-4" />
-                              <span className="capitalize">{platform}</span>
-                            </a>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Novels List */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Novels ({author.novels.length})
-            </h2>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="newest">Newest First</option>
-              <option value="popular">Most Popular</option>
-              <option value="rating">Highest Rated</option>
-            </select>
-          </div>
-
-          {(!author.novels || author.novels.length === 0) ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No Novels Yet
-                </h3>
-                <p className="text-gray-600">
-                  This author hasn't published any novels yet.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {author.novels.map((novel: any) => (
-                <Card
-                  key={novel.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex gap-4">
-                      {/* Cover */}
-                      <div className="flex-shrink-0 py-4">
-                        <div className="w-20 h-28 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden">
-                          {novel.cover_url ? (
-                            <Image
-                              src={novel.cover_url}
-                              alt={novel.title}
-                              width={96}
-                              height={120}
-                              className="object-cover aspect-auto"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="h-8 w-8 text-blue-400" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Novel Info */}
-                      <div className="flex-1 min-w-0 py-4">
-                        <Link
-                          href={`/novel/${novel.slug}`}
-                          className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-1"
-                        >
-                          {novel.title}
-                        </Link>
-
-                        <p className="text-gray-600 mt-2 line-clamp-3">
-                          {novel.description || "No description available."}
-                        </p>
-
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <Badge className={getStatusColor(novel.status)}>
-                            {novel.status}
-                          </Badge>
-                          {novel.genres.slice(0, 3).map((genre: string) => (
-                            <Badge
-                              key={genre}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
-
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Rating rating={novel.rating} size="sm" readonly />
-                            <span>({formatNumber(novel.rating_count)})</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <BookOpen className="h-4 w-4" />
-                            <span>
-                              {formatNumber(novel.chapter_count)} chapters
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Eye className="h-4 w-4" />
-                            <span>{formatNumber(novel.view_count)} views</span>
-                          </div>
-                          <span className="w-full sm:w-auto">Updated {formatDate(novel.updated_at)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

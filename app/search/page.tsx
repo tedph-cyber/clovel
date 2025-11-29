@@ -52,7 +52,7 @@ function SearchPageContent() {
   const { results, isLoading, error, hasSearched, search, clearSearch } =
     useSearch({
       initialParams: { q: initialQuery, type: searchType },
-      autoSearch: !!initialQuery, // Only auto-search if there's an initial query from URL
+      autoSearch: false, // Disable auto-search, we'll handle it manually
     });
 
   // Handle manual search trigger
@@ -79,12 +79,23 @@ function SearchPageContent() {
     }
   };
 
-  // Only search when filters change if we already have results
+  // Only search once on initial load if there's a query in the URL
   useEffect(() => {
-    if (initialQuery && !hasSearched) {
-      handleSearch();
+    if (initialQuery && initialQuery.trim().length >= 2) {
+      search({
+        q: initialQuery.trim(),
+        type: searchType,
+        page: 1,
+        filters: {
+          genres: selectedGenres,
+          status: selectedStatus,
+          minRating: minRating || undefined,
+          sortBy,
+        },
+      });
     }
-    }, [initialQuery]);  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount  
 
   const handleGenreToggle = (genre: string) => {
     setSelectedGenres((prev) =>
@@ -155,7 +166,7 @@ function SearchPageContent() {
 
           {/* Search Type Tabs */}
           <div className="flex items-center gap-2 mt-4">
-            {(["all", "novel", "author"] as const).map((type) => (
+                {(["all", "novel", "author"] as const).map((type) => (
               <Button
                 key={type}
                 variant={searchType === type ? "primary" : "outline"}
@@ -163,14 +174,14 @@ function SearchPageContent() {
                 onClick={() => setSearchType(type)}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
-                {type === "all" && results && (
-                  <span className="ml-1">({results.total})</span>
+                {results && type === "all" && (
+                  <span className="ml-1">({results.novels.length + results.authors.length})</span>
                 )}
-                {type === "novel" && results && (
-                  <span className="ml-1">({results.totalNovels})</span>
+                {results && type === "novel" && (
+                  <span className="ml-1">({results.novels.length})</span>
                 )}
-                {type === "author" && results && (
-                  <span className="ml-1">({results.totalAuthors})</span>
+                {results && type === "author" && (
+                  <span className="ml-1">({results.authors.length})</span>
                 )}
               </Button>
             ))}
@@ -319,9 +330,9 @@ function SearchPageContent() {
                 {/* Results Summary */}
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    {results.total === 0
+                    {results.novels.length + results.authors.length === 0
                       ? "No results found"
-                      : `${formatNumber(results.total)} results found`}
+                      : `${formatNumber(results.novels.length + results.authors.length)} results found`}
                     {query && ` for "${query}"`}
                   </h2>
                 </div>
@@ -331,7 +342,7 @@ function SearchPageContent() {
                   results.novels.length > 0 && (
                     <div className="mb-8">
                       <h3 className="text-lg font-medium text-gray-900 mb-4">
-                        Novels ({results.totalNovels})
+                        Novels ({results.novels.length})
                       </h3>
                       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                         {results.novels.map((novel) => (
@@ -363,28 +374,29 @@ function SearchPageContent() {
                                     >
                                       {novel.title}
                                     </Link>
-                                    <Link
-                                      href={`/author/${novel.author.slug}`}
-                                      className="text-sm text-gray-600 hover:text-emerald-600 transition-colors mt-1 block"
-                                    >
-                                      by {novel.author.name}
-                                    </Link>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      by {novel.author}
+                                    </div>
                                   </div>
 
                                   {/* Rating and Chapter Count */}
                                   <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
-                                      <Rating
-                                        rating={novel.rating}
-                                        size="sm"
-                                        readonly
-                                      />
-                                      <span className="text-xs text-gray-500">
-                                        ({novel.rating})
-                                      </span>
+                                      {novel.rating && (
+                                        <>
+                                          <Rating
+                                            rating={novel.rating}
+                                            size="sm"
+                                            readonly
+                                          />
+                                          <span className="text-xs text-gray-500">
+                                            ({novel.rating.toFixed(1)})
+                                          </span>
+                                        </>
+                                      )}
                                     </div>
                                     <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                                      {novel.chapter_count} chapters
+                                      {novel.total_chapters || 0} chapters
                                     </span>
                                   </div>
 
@@ -395,7 +407,7 @@ function SearchPageContent() {
 
                                   {/* Genres */}
                                   <div className="flex flex-wrap gap-1 mb-3">
-                                    {novel.genres.slice(0, 3).map((genre) => (
+                                    {novel.genres.slice(0, 3).map((genre: string) => (
                                       <Badge
                                         key={genre}
                                         variant="secondary"
@@ -414,7 +426,7 @@ function SearchPageContent() {
 
                                   {/* Updated Date */}
                                   <div className="text-xs text-gray-500 border-t pt-2">
-                                    Updated {formatDate(novel.updated_at)}
+                                    Updated {formatDate(novel.last_updated || novel.created_at)}
                                   </div>
                                 </div>
                               </div>
@@ -430,7 +442,7 @@ function SearchPageContent() {
                   results.authors.length > 0 && (
                     <div className="mb-8">
                       <h3 className="text-lg font-medium text-gray-900 mb-4">
-                        Authors ({results.totalAuthors})
+                        Authors ({results.authors.length})
                       </h3>
                       <div className="grid gap-4 md:grid-cols-2">
                         {results.authors.map((author) => (
@@ -477,11 +489,11 @@ function SearchPageContent() {
                   )}
 
                 {/* Pagination */}
-                {results.pagination.totalPages > 1 && (
+                {results.pagination.total > results.pagination.limit && (
                   <div className="flex justify-center mt-8">
                     <Pagination
                       currentPage={results.pagination.page}
-                      totalPages={results.pagination.totalPages}
+                      totalPages={Math.ceil(results.pagination.total / results.pagination.limit)}
                       onPageChange={setCurrentPage}
                     />
                   </div>
@@ -506,7 +518,8 @@ function SearchPageContent() {
               !error &&
               hasSearched &&
               results &&
-              results.total === 0 && (
+              results.novels.length === 0 &&
+              results.authors.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-4">
                     <Search className="h-16 w-16 mx-auto" />
