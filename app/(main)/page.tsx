@@ -7,35 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Rating } from '@/components/ui/rating';
-import { BookOpen, TrendingUp, Clock, Users, Star } from 'lucide-react';
+import { BookOpen, TrendingUp, Clock, Star } from 'lucide-react';
 import { formatNumber, formatDate } from '@/lib/utils/formatters';
-
-interface Novel {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  cover_url?: string;
-  author: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  genres: string[];
-  rating: number;
-  rating_count: number;
-  chapter_count: number;
-  view_count: number;
-  status: string;
-  updated_at: string;
-}
-
-interface ApiResponse {
-  novels?: Novel[];
-  pagination?: {
-    total: number;
-  };
-}
+import { getNovels, Novel } from '@/lib/db/novels';
 
 export default function HomePage() {
   const [featuredNovels, setFeaturedNovels] = useState<Novel[]>([]);
@@ -49,41 +23,46 @@ export default function HomePage() {
     totalAuthors: 1000
   });
 
-  // Fetch data from backend
+  // Fetch data from Supabase
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch featured novels (popular + high rated)
-        const featuredResponse = await fetch('/api/novels?sort_by=rating&limit=6&min_rating=4.0');
-        if (featuredResponse.ok) {
-          const featuredData: ApiResponse = await featuredResponse.json();
-          if (featuredData.novels) {
-            setFeaturedNovels(featuredData.novels);
-            if (featuredData.pagination) {
-              setStats(prev => ({ ...prev, totalNovels: featuredData.pagination!.total }));
-            }
-          }
+        // Fetch featured novels (high rated)
+        const featuredData = await getNovels({
+          sortBy: 'rating',
+          sortOrder: 'desc',
+          minRating: 4.0,
+          limit: 6,
+        });
+        
+        if (featuredData.novels) {
+          setFeaturedNovels(featuredData.novels);
+          setStats(prev => ({ ...prev, totalNovels: featuredData.total }));
         }
 
-        // Fetch popular novels (by views)
-        const popularResponse = await fetch('/api/novels?sort_by=view_count&limit=4');
-        if (popularResponse.ok) {
-          const popularData: ApiResponse = await popularResponse.json();
-          if (popularData.novels) {
-            setPopularNovels(popularData.novels);
-          }
+        // Fetch popular novels (by rating)
+        const popularData = await getNovels({
+          sortBy: 'rating',
+          sortOrder: 'desc',
+          limit: 4,
+        });
+        
+        if (popularData.novels) {
+          setPopularNovels(popularData.novels);
         }
 
         // Fetch recently updated novels
-        const recentResponse = await fetch('/api/novels?sort_by=updated_at&limit=4');
-        if (recentResponse.ok) {
-          const recentData: ApiResponse = await recentResponse.json();
-          if (recentData.novels) {
-            setRecentNovels(recentData.novels);
-          }
+        const recentData = await getNovels({
+          sortBy: 'last_updated',
+          sortOrder: 'desc',
+          limit: 4,
+        });
+        
+        if (recentData.novels) {
+          setRecentNovels(recentData.novels);
         }
 
       } catch (err) {
@@ -133,12 +112,9 @@ export default function HomePage() {
             {novel.title}
           </Link>
         </CardTitle>
-        <Link 
-          href={`/author/${novel.author.slug}`}
-          className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-        >
-          by {novel.author.name}
-        </Link>
+        <div className="text-sm text-gray-600">
+          by {novel.author}
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <p className="text-gray-700 text-sm mb-3 line-clamp-3">
@@ -157,27 +133,24 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Rating rating={novel.rating} size="sm" readonly showValue />
-            <span className="text-xs text-gray-500">({formatNumber(novel.rating_count)})</span>
-          </div>
+          {novel.rating && (
+            <div className="flex items-center gap-2">
+              <Rating rating={novel.rating} size="sm" readonly showValue />
+            </div>
+          )}
           
           <div className="flex items-center justify-between text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              {formatNumber(novel.chapter_count)} chapters
+              {formatNumber(novel.total_chapters || 0)} chapters
             </span>
-            {showStats && (
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                {formatNumber(novel.view_count)} views
-              </span>
-            )}
           </div>
           
-          <p className="text-xs text-gray-500">
-            Updated {formatDate(novel.updated_at)}
-          </p>
+          {novel.last_updated && (
+            <p className="text-xs text-gray-500">
+              Updated {formatDate(novel.last_updated)}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

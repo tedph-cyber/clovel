@@ -1,11 +1,12 @@
-// Environment configuration
+// Supabase configuration
 export const config = {
-  api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  supabase: {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   },
 };
 
-// Helper function to get API URL
-export const getApiUrl = (endpoint: string) => {
-  return `${config.api.baseUrl}${endpoint}`;
+// Helper to check if Supabase is configured
+export const isSupabaseConfigured = () => {
+  return !!(config.supabase.url && config.supabase.anonKey);
 };

@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 import Link from "next/link";
-import { SearchIcon, House, Menu, X, BookOpen, TrendingUp } from "lucide-react";
+import { SearchIcon, House, Menu, X, BookOpen, TrendingUp, Activity } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pacifico } from "next/font/google";
@@ -168,6 +168,22 @@ export default function Navbar() {
 
             {/* Divider */}
             <div className="border-t border-gray-200 my-4 mx-6"></div>
+
+            {/* Developer Tools */}
+            <div className="px-6 py-2 mb-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Developer</h3>
+              <Link 
+                href="/diagnostics" 
+                className="flex items-center py-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                Database Diagnostics
+              </Link>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 mb-4 mx-6"></div>
 
             {/* Genre Links */}
             <div className="px-6 py-2">

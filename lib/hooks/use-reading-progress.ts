@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from './use-local-storage';
-import { chapterApi } from '../api/chapters';
 import type { ReadingProgress } from '../types';
 
 interface UseReadingProgressOptions {
@@ -29,7 +28,7 @@ export function useReadingProgress({
     0
   );
 
-  // Load initial progress
+  // Load initial progress from local storage
   useEffect(() => {
     const loadProgress = async () => {
       // Don't load if we don't have valid IDs
@@ -40,18 +39,11 @@ export function useReadingProgress({
 
       try {
         setIsLoading(true);
-        const remoteProgress = await chapterApi.getProgress(novelSlug, chapterId);
-        
-        if (remoteProgress) {
-          setProgress(remoteProgress.progress);
-          setLocalProgress(remoteProgress.progress);
-        } else {
-          // Use local progress if no remote progress found
-          setProgress(localProgress);
-        }
+        // Use local storage for progress tracking
+        setProgress(localProgress);
       } catch (err) {
         setError('Failed to load reading progress');
-        setProgress(localProgress); // Fallback to local storage
+        setProgress(localProgress);
       } finally {
         setIsLoading(false);
       }
@@ -60,18 +52,17 @@ export function useReadingProgress({
     loadProgress();
   }, [chapterId, localProgress, setLocalProgress]);
 
-  // Auto-save progress
+  // Auto-save progress to local storage
   useEffect(() => {
     if (!autoSave || progress === lastSaved) return;
 
     const saveTimer = setTimeout(async () => {
       try {
-        await chapterApi.updateProgress(novelSlug, chapterId, progress);
+        // Save to local storage only (no remote API)
         setLastSaved(progress);
         setLocalProgress(progress);
       } catch (err) {
         console.error('Failed to save reading progress:', err);
-        // Still save locally even if remote save fails
         setLocalProgress(progress);
       }
     }, saveInterval);
@@ -86,7 +77,7 @@ export function useReadingProgress({
     setLocalProgress(clampedProgress);
   }, [setLocalProgress]);
 
-  // Save progress immediately
+  // Save progress immediately to local storage
   const saveProgress = useCallback(async () => {
     // Don't save if we don't have valid IDs
     if (!novelId || !chapterId) {
@@ -94,7 +85,7 @@ export function useReadingProgress({
     }
 
     try {
-      await chapterApi.updateProgress(novelSlug, chapterId, progress);
+      // Save to local storage only (no remote API)
       setLastSaved(progress);
       setLocalProgress(progress);
       return true;

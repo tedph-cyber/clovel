@@ -23,89 +23,57 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatNumber, formatDate } from "@/lib/utils/formatters";
-
-interface Author {
-  id: string;
-  name: string;
-  slug: string;
-  bio?: string;
-  avatar_url?: string;
-  nationality?: string;
-  website?: string;
-  social_links: {
-    twitter?: string;
-    facebook?: string;
-    instagram?: string;
-  };
-  total_novels: number;
-  total_followers: number;
-  total_views: number;
-  joined_at: string;
-  is_verified: boolean;
-}
-
-interface Novel {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  cover_url?: string;
-  genres: string[];
-  status: string;
-  rating: number;
-  rating_count: number;
-  chapter_count: number;
-  view_count: number;
-  updated_at: string;
-}
-
-interface AuthorResponse {
-  author: Author;
-  novels: Novel[];
-}
+import { searchNovels, Novel } from "@/lib/db/novels";
 
 export default function AuthorPage() {
   const params = useParams();
   const slug = params.slug as string;
+  // Convert slug to author name (replace hyphens with spaces, capitalize)
+  const authorName = slug.split('-').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
 
-  const [author, setAuthor] = useState<AuthorResponse | null>(null);
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "rating">(
     "newest"
   );
 
   useEffect(() => {
-    const fetchAuthorData = async () => {
+    const fetchAuthorNovels = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch author details
-        const authorResponse = await fetch(`/api/authors/${slug}`);
-        if (!authorResponse.ok) {
-          throw new Error(
-            authorResponse.status === 404
-              ? "Author not found"
-              : "Failed to fetch author"
-          );
+        // Search for novels by this author name
+        const novelsData = await searchNovels(authorName, 100);
+        
+        if (!novelsData || novelsData.length === 0) {
+          setError('No novels found for this author');
+          setNovels([]);
+          return;
         }
 
-        const authorData = await authorResponse.json();
+        // Sort novels based on selected sort
+        if (authorData.novels) {
+          switch (sortBy) {
+            case 'popular':
+              authorData.novels.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+              break;
+            case 'rating':
+              authorData.novels.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0));
+              break;
+            case 'newest':
+            default:
+              // Already sorted by updated_at in query
+              break;
+          }
+        }
+
         setAuthor(authorData);
-
-        // Fetch author's novels
-        const novelsResponse = await fetch(
-          `/api/authors/${slug}/novels?sort_by=${sortBy}`
-        );
-        if (novelsResponse.ok) {
-          const novelsData = await novelsResponse.json();
-          setNovels(novelsData || []);
-        }
       } catch (err) {
-        console.error("Failed to fetch author:", err);
+        console.error('Failed to fetch author:', err);
         setError(err instanceof Error ? err.message : "Failed to load author");
       } finally {
         setLoading(false);
@@ -361,7 +329,7 @@ export default function AuthorPage() {
             </select>
           </div>
 
-          {novels.length === 0 ? (
+          {(!author.novels || author.novels.length === 0) ? (
             <Card>
               <CardContent className="text-center py-12">
                 <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -375,7 +343,7 @@ export default function AuthorPage() {
             </Card>
           ) : (
             <div className="space-y-6">
-              {author.novels.map((novel) => (
+              {author.novels.map((novel: any) => (
                 <Card
                   key={novel.id}
                   className="hover:shadow-md transition-shadow"
@@ -418,7 +386,7 @@ export default function AuthorPage() {
                           <Badge className={getStatusColor(novel.status)}>
                             {novel.status}
                           </Badge>
-                          {novel.genres.slice(0, 3).map((genre) => (
+                          {novel.genres.slice(0, 3).map((genre: string) => (
                             <Badge
                               key={genre}
                               variant="outline"

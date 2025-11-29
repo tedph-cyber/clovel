@@ -18,27 +18,35 @@ import {
 } from "lucide-react";
 import { useReadingProgress } from "@/lib/hooks/use-reading-progress";
 import { formatDate, formatReadingTime } from "@/lib/utils/formatters";
+import {
+  getChapterBySlug,
+  getNextChapter,
+  getPreviousChapter,
+  Chapter,
+} from "@/lib/db/chapters";
+import { getNovelBySlug } from "@/lib/db/novels";
 
-interface Chapter {
-  id: string;
+interface ChapterData {
+  id: number;
   title: string;
   slug: string;
   content: string;
   chapter_number: number;
-  word_count: number;
-  published_at: string;
+  word_count: number | null;
+  created_at: string;
+  novel_slug: string;
   novel: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
   prev_chapter?: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
   next_chapter?: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
@@ -60,7 +68,7 @@ export default function ChapterPage() {
   // Extract chapter number from chapterId (e.g., 'chapter-1' -> '1')
   const chapterNumber = chapterId?.replace(/^chapter-/, "") || "";
 
-  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [chapter, setChapter] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -75,7 +83,7 @@ export default function ChapterPage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const { progress, updateProgress, markAsCompleted } = useReadingProgress({
-    novelId: chapter?.novel?.id || novelSlug,
+    novelId: chapter?.novel?.id.toString() || novelSlug,
     novelSlug: novelSlug,
     chapterId: chapterId,
     autoSave: true,
@@ -94,33 +102,65 @@ export default function ChapterPage() {
     localStorage.setItem("reading-settings", JSON.stringify(settings));
   }, [settings]);
 
-  // Fetch chapter data
+  // Fetch chapter data from Supabase
   useEffect(() => {
     const fetchChapter = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/${novelSlug}/${chapterId}`);
-        console.log("API call:", `/api/${novelSlug}/${chapterId}`);
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "Chapter not found"
-              : "Failed to fetch chapter"
-          );
+        // Fetch chapter and novel data from Supabase
+        const [chapterData, novelData] = await Promise.all([
+          getChapterBySlug(novelSlug, chapterId),
+          getNovelBySlug(novelSlug),
+        ]);
+
+        if (!chapterData) {
+          setError("Chapter not found");
+          return;
         }
 
-        const data = await response.json();
-        console.log("Fetched chapter data:", data);
+        if (!novelData) {
+          setError("Novel not found");
+          return;
+        }
 
-        // set chapter data directly
-        setChapter(data);
+        // Fetch prev and next chapters using novel_slug
+        const [prevChapter, nextChapter] = await Promise.all([
+          getPreviousChapter(
+            chapterData.novel_slug,
+            chapterData.chapter_number
+          ),
+          getNextChapter(chapterData.novel_slug, chapterData.chapter_number),
+        ]);
 
-        // Track view using the new API structure
-        fetch(`/api/${novelSlug}/chapter-${chapterId}/view`, { method: "POST" }).catch(
-          console.error
-        );
+        // Combine data
+        const fullChapterData: ChapterData = {
+          ...chapterData,
+          novel: {
+            id: novelData.id,
+            title: novelData.title,
+            slug: novelData.slug,
+          },
+          prev_chapter: prevChapter
+            ? {
+                id: prevChapter.id,
+                title: prevChapter.title,
+                slug: prevChapter.slug,
+              }
+            : undefined,
+          next_chapter: nextChapter
+            ? {
+                id: nextChapter.id,
+                title: nextChapter.title,
+                slug: nextChapter.slug,
+              }
+            : undefined,
+        };
+
+        setChapter(fullChapterData);
+
+        // Note: View tracking removed as database doesn't have views table
       } catch (err) {
         console.error("Failed to fetch chapter:", err);
         setError(err instanceof Error ? err.message : "Failed to load chapter");
@@ -167,13 +207,9 @@ export default function ChapterPage() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && chapter?.prev_chapter) {
-        router.push(
-          `/novel/${novelSlug}/${chapter.prev_chapter.slug}`
-        );
+        router.push(`/novel/${novelSlug}/${chapter.prev_chapter.slug}`);
       } else if (e.key === "ArrowRight" && chapter?.next_chapter) {
-        router.push(
-          `/novel/${novelSlug}/${chapter.next_chapter.slug}`
-        );
+        router.push(`/novel/${novelSlug}/${chapter.next_chapter.slug}`);
       } else if (e.key === "Escape" && isFullscreen) {
         setIsFullscreen(false);
       }
@@ -188,7 +224,7 @@ export default function ChapterPage() {
       case "dark":
         return "bg-gray-900 text-gray-100";
       case "sepia":
-        return "bg-amber-50 text-amber-900";
+        return "bg-[#f4ecd8] text-[#5c4b37]";
       default:
         return "bg-white text-gray-900";
     }
@@ -196,10 +232,10 @@ export default function ChapterPage() {
 
   const getFontSizeClass = () => {
     const sizeMap = {
-      sm: "text-sm",
-      base: "text-base",
-      lg: "text-lg",
-      xl: "text-xl",
+      sm: "text-base leading-7",
+      base: "text-lg leading-8",
+      lg: "text-xl leading-9",
+      xl: "text-2xl leading-10",
     };
     return sizeMap[settings.fontSize];
   };
@@ -210,8 +246,8 @@ export default function ChapterPage() {
 
   const getLineHeightClass = () => {
     return settings.lineHeight === "loose"
-      ? "leading-loose"
-      : "leading-relaxed";
+      ? "!leading-loose"
+      : "!leading-relaxed";
   };
 
   if (loading) {
@@ -273,9 +309,7 @@ export default function ChapterPage() {
 
               {/* Center - Chapter info */}
               <div className="flex-1 text-center px-4">
-                <h1 className="font-medium truncate">
-                 {chapter.title}
-                </h1>
+                <h1 className="font-medium truncate">{chapter.title}</h1>
                 <p className="text-sm opacity-75 truncate">
                   {chapter.novel.title}
                 </p>
@@ -320,11 +354,12 @@ export default function ChapterPage() {
         <div
           className={`border-b transition-all duration-200 ${getThemeClasses()}`}
         >
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-4 py-6">
+            <h3 className="text-sm font-semibold mb-4 opacity-75">Reading Settings</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Font Size */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 opacity-75">
                   Font Size
                 </label>
                 <select
@@ -335,7 +370,7 @@ export default function ChapterPage() {
                       fontSize: e.target.value as any,
                     }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md ${getThemeClasses()}`}
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${getThemeClasses()}`}
                 >
                   <option value="sm">Small</option>
                   <option value="base">Medium</option>
@@ -346,7 +381,7 @@ export default function ChapterPage() {
 
               {/* Font Family */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 opacity-75">
                   Font Family
                 </label>
                 <select
@@ -357,17 +392,17 @@ export default function ChapterPage() {
                       fontFamily: e.target.value,
                     }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md ${getThemeClasses()}`}
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${getThemeClasses()}`}
                 >
-                  <option value="serif">Serif</option>
-                  <option value="sans">Sans Serif</option>
+                  <option value="serif">Serif (Traditional)</option>
+                  <option value="sans">Sans Serif (Modern)</option>
                 </select>
               </div>
 
               {/* Line Height */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Line Height
+                <label className="block text-sm font-medium mb-2 opacity-75">
+                  Line Spacing
                 </label>
                 <select
                   value={settings.lineHeight}
@@ -377,16 +412,16 @@ export default function ChapterPage() {
                       lineHeight: e.target.value as any,
                     }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md ${getThemeClasses()}`}
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${getThemeClasses()}`}
                 >
-                  <option value="relaxed">Relaxed</option>
-                  <option value="loose">Loose</option>
+                  <option value="relaxed">Comfortable</option>
+                  <option value="loose">Spacious</option>
                 </select>
               </div>
 
               {/* Theme */}
               <div>
-                <label className="block text-sm font-medium mb-2">Theme</label>
+                <label className="block text-sm font-medium mb-2 opacity-75">Theme</label>
                 <select
                   value={settings.theme}
                   onChange={(e) =>
@@ -395,7 +430,7 @@ export default function ChapterPage() {
                       theme: e.target.value as any,
                     }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md ${getThemeClasses()}`}
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${getThemeClasses()}`}
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -409,57 +444,98 @@ export default function ChapterPage() {
 
       {/* Chapter Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Chapter Header */}
           {!isFullscreen && (
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">
-               {chapter.title}
-              </h1>
-              <div className="flex items-center justify-center space-x-4 text-sm opacity-75">
-                <span>{formatReadingTime(chapter.word_count)}</span>
+            <div className="text-center mb-12 pb-8 border-b border-current border-opacity-10">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{chapter.title}</h1>
+              <div className="flex items-center justify-center space-x-4 text-sm opacity-60">
+                <span>{formatReadingTime(chapter.word_count || 0)}</span>
                 <span>•</span>
-                <span>{formatDate(chapter.published_at)}</span>
+                <span>{formatDate(chapter.created_at)}</span>
               </div>
             </div>
           )}
 
           {/* Chapter Content */}
-          <Card className={`${getThemeClasses()} border-0 shadow-none`}>
-            <CardContent
+          <article className="mb-12">
+            <div 
               ref={contentRef}
-              className={`prose prose-lg max-w-none ${getFontSizeClass()} ${getFontFamilyClass()} ${getLineHeightClass()}`}
-              dangerouslySetInnerHTML={{ __html: chapter.content }}
-            />
-          </Card>
+              className={`
+                ${getFontSizeClass()} 
+                ${getFontFamilyClass()} 
+                ${getLineHeightClass()}
+                px-4 md:px-8
+                py-8
+              `}
+            >
+              {(() => {
+                // Clean up the content: remove HTML tags and excessive spacing
+                let cleanedContent = chapter.content
+                  // Remove HTML tags but keep the content
+                  .replace(/<[^>]*>/g, '')
+                  // Replace HTML entities
+                  .replace(/&nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(/&quot;/g, '"')
+                  // Remove watermarks (URLs and special unicode text patterns)
+                  .replace(/𝕗𝗿𝕖𝐞𝐰𝗲𝕓𝐧𝕠𝕧𝗲𝐥\.𝚌𝐨𝚖/g, '')
+                  .replace(/freewebnovel\.com/gi, '')
+                  .replace(/f\s*r\s*e\s*e\s*w\s*e\s*b\s*n\s*o\s*v\s*e\s*l/gi, '')
+                  // Remove common website watermarks
+                  .replace(/\b(?:novelupdates|wuxiaworld|webnovel)\.(?:com|net|org)\b/gi, '')
+                  // Normalize line breaks
+                  .replace(/\r\n/g, '\n')
+                  .replace(/\r/g, '\n');
+                
+                // Split into paragraphs (on single or multiple newlines)
+                const paragraphs = cleanedContent
+                  .split(/\n+/)
+                  .map(p => p.trim())
+                  .filter(p => p.length > 0);
+                
+                return paragraphs.map((paragraph, index) => (
+                  <p 
+                    key={index} 
+                    className="mb-6 first:mt-0 last:mb-0 indent-8"
+                  >
+                    {paragraph}
+                  </p>
+                ));
+              })()}
+            </div>
+          </article>
 
           {/* Chapter Navigation */}
           {!isFullscreen && (
-            <div className="flex items-center justify-between mt-12 pt-8 border-t">
-              <div className="flex-1">
+            <nav className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mt-12 pt-8 border-t border-current border-opacity-10">
+              <div className="flex-1 min-w-0">
                 {chapter.prev_chapter ? (
-                  <Button variant="outline" asChild>
-                    <Link
-                      href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-2" />
-                      <div className="text-left">
-                        <div className="text-xs opacity-75">
-                          Previous Chapter
-                        </div>
-                        <div className="truncate max-w-48">
+                  <Link
+                    href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}
+                    className="group block p-4 rounded-lg border border-current border-opacity-10 hover:border-opacity-30 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ChevronLeft className="h-5 w-5 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs opacity-60 mb-1">Previous Chapter</div>
+                        <div className="font-medium truncate group-hover:text-emerald-600 transition-colors">
                           {chapter.prev_chapter.title}
                         </div>
                       </div>
-                    </Link>
-                  </Button>
+                    </div>
+                  </Link>
                 ) : (
-                  <div />
+                  <div className="p-4 rounded-lg border border-current border-opacity-5">
+                    <div className="text-sm opacity-40">No previous chapter</div>
+                  </div>
                 )}
               </div>
 
-              <div className="px-4">
-                <Button variant="outline" asChild>
+              <div className="md:px-4">
+                <Button variant="outline" asChild className="w-full md:w-auto">
                   <Link href={`/novel/${novelSlug}`}>
                     <List className="h-4 w-4 mr-2" />
                     Chapter List
@@ -467,26 +543,29 @@ export default function ChapterPage() {
                 </Button>
               </div>
 
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 min-w-0">
                 {chapter.next_chapter ? (
-                  <Button asChild>
-                    <Link
-                      href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}
-                    >
-                      <div className="text-right">
-                        <div className="text-xs opacity-75">Next Chapter</div>
-                        <div className="truncate max-w-48">
+                  <Link
+                    href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}
+                    className="group block p-4 rounded-lg border border-current border-opacity-10 hover:border-opacity-30 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0 text-right">
+                        <div className="text-xs opacity-60 mb-1">Next Chapter</div>
+                        <div className="font-medium truncate group-hover:text-emerald-600 transition-colors">
                           {chapter.next_chapter.title}
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
+                      <ChevronRight className="h-5 w-5 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
                 ) : (
-                  <div />
+                  <div className="p-4 rounded-lg border border-current border-opacity-5 text-right">
+                    <div className="text-sm opacity-40">No next chapter</div>
+                  </div>
                 )}
               </div>
-            </div>
+            </nav>
           )}
         </div>
       </main>
@@ -499,9 +578,7 @@ export default function ChapterPage() {
           >
             {chapter.prev_chapter && (
               <Button variant="ghost" size="sm" asChild>
-                <Link
-                  href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}
-                >
+                <Link href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}>
                   <ChevronLeft className="h-4 w-4" />
                 </Link>
               </Button>
@@ -517,9 +594,7 @@ export default function ChapterPage() {
 
             {chapter.next_chapter && (
               <Button variant="ghost" size="sm" asChild>
-                <Link
-                  href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}
-                >
+                <Link href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}>
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </Button>

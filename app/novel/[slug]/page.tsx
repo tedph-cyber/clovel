@@ -32,47 +32,14 @@ import {
   formatDate,
   formatReadingTime,
 } from "@/lib/utils/formatters";
-
-interface NovelDetail {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  cover_url?: string;
-  author: {
-    id: string;
-    name: string;
-    slug: string;
-    avatar_url?: string;
-  };
-  genres: string[];
-  tags: string[];
-  status: string;
-  rating: number;
-  rating_count: number;
-  chapter_count: number;
-  word_count: number;
-  view_count: number;
-  bookmark_count: number;
-  created_at: string;
-  updated_at: string;
-  chapters?: Chapter[];
-}
-
-interface Chapter {
-  id: string;
-  title: string;
-  slug: string;
-  chapter_number: number;
-  word_count: number;
-  published_at: string;
-}
+import { getNovelBySlug, Novel } from "@/lib/db/novels";
+import { getChaptersByNovelSlug, Chapter } from "@/lib/db/chapters";
 
 export default function NovelDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const [novel, setNovel] = useState<NovelDetail | null>(null);
+  const [novel, setNovel] = useState<Novel | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,31 +53,24 @@ export default function NovelDetailPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch novel details
-        const novelResponse = await fetch(`/api/novels/${slug}`);
-        if (!novelResponse.ok) {
-          throw new Error(
-            novelResponse.status === 404
-              ? "Novel not found"
-              : "Failed to fetch novel"
-          );
+        // Fetch novel details and chapters separately from Supabase
+        const [novelData, chaptersData] = await Promise.all([
+          getNovelBySlug(slug),
+          getChaptersByNovelSlug(slug)
+        ]);
+        
+        if (!novelData) {
+          setError('Novel not found');
+          return;
         }
 
-        const novelData = await novelResponse.json();
-        console.log("Novel data:", novelData); // Debug log
-
-        // Set novel data directly
+        console.log('Novel data:', novelData); // Debug log
+        console.log('Chapters data:', chaptersData); // Debug log
         setNovel(novelData);
-
-        // Set chapters from the novel data (they're included in the response)
-        if (novelData.chapters && Array.isArray(novelData.chapters)) {
-          setChapters(novelData.chapters);
-        } else {
-          setChapters([]);
-        }
+        setChapters(chaptersData || []);
       } catch (err) {
-        console.error("Failed to fetch novel:", err);
-        setError(err instanceof Error ? err.message : "Failed to load novel");
+        console.error('Failed to fetch novel:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load novel');
       } finally {
         setLoading(false);
       }
@@ -143,6 +103,10 @@ export default function NovelDetailPage() {
     // Implement reading list functionality
     setIsInReadingList(!isInReadingList);
   };
+
+  if (!novel) {
+    return null;
+  }
 
   const displayedChapters = showAllChapters ? chapters : chapters.slice(0, 10);
 
@@ -224,20 +188,17 @@ export default function NovelDetailPage() {
               </h1>
 
               <div className="flex items-center gap-2 mb-4">
-                <Link
-                  href={`/author/${novel.author.slug}`}
-                  className="flex items-center gap-2 text-lg text-gray-700 hover:text-blue-600 transition-colors"
-                >
+                <div className="flex items-center gap-2 text-lg text-gray-700">
                   <CircleUserRound className="h-5 w-5" />
-                  <span className="font-medium">{novel.author.name}</span>
-                </Link>
+                  <span className="font-medium">{novel.author}</span>
+                </div>
               </div>
 
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <Rating rating={novel.rating} size="md" readonly showValue />
+                  <Rating rating={novel.rating || 0} size="md" readonly showValue />
                   <span className="text-sm text-gray-500">
-                    ({formatNumber(novel.rating_count)} reviews)
+                    ({formatNumber(0)} reviews)
                   </span>
                 </div>
                 <Badge className={getStatusColor(novel.status)}>
@@ -248,25 +209,25 @@ export default function NovelDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {formatNumber(novel.chapter_count)}
+                    {formatNumber(novel.total_chapters || 0)}
                   </div>
                   <div className="text-sm text-gray-600">Chapters</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {formatNumber(novel.view_count)}
+                    {formatNumber(0)}
                   </div>
                   <div className="text-sm text-gray-600">Views</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-600">
-                    {formatNumber(novel.bookmark_count)}
+                    {formatNumber(0)}
                   </div>
                   <div className="text-sm text-gray-600">Bookmarks</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    {formatReadingTime(novel.word_count)}
+                    {formatReadingTime(0)}
                   </div>
                   <div className="text-sm text-gray-600">Read Time</div>
                 </div>
@@ -320,7 +281,7 @@ export default function NovelDetailPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Chapters ({novel.chapter_count})</CardTitle>
+                <CardTitle>Chapters ({novel.total_chapters || 0})</CardTitle>
                 {chapters.length > 0 && (
                   <Button asChild>
                     <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
@@ -338,7 +299,7 @@ export default function NovelDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {displayedChapters.map((chapter) => (
+                  {displayedChapters.map((chapter: Chapter) => (
                     <Link
                       key={chapter.id}
                       href={`/novel/${novel.slug}/${chapter.slug}`}
@@ -352,11 +313,11 @@ export default function NovelDetailPage() {
                           <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {formatReadingTime(chapter.word_count)}
+                              {formatReadingTime(chapter.word_count || 0)}
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {formatDate(chapter.published_at)}
+                              {formatDate(chapter.created_at)}
                             </span>
                           </div>
                         </div>
@@ -399,7 +360,7 @@ export default function NovelDetailPage() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Genres</h4>
                   <div className="flex flex-wrap gap-1">
-                    {novel.genres.map((genre) => (
+                    {novel.genres.map((genre: string) => (
                       <Link key={genre} href={`/genre/${genre.toLowerCase()}`}>
                         <Badge
                           variant="outline"
@@ -411,23 +372,6 @@ export default function NovelDetailPage() {
                     ))}
                   </div>
                 </div>
-
-                {novel.tags.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Tags</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {novel.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Published</h4>
@@ -441,14 +385,7 @@ export default function NovelDetailPage() {
                     Last Updated
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {formatDate(novel.updated_at)}
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Word Count</h4>
-                  <p className="text-sm text-gray-600">
-                    {formatNumber(novel.word_count)} words
+                    {formatDate(novel.last_updated || novel.created_at)}
                   </p>
                 </div>
               </CardContent>
@@ -460,18 +397,15 @@ export default function NovelDetailPage() {
                 <CardTitle>About the Author</CardTitle>
               </CardHeader>
               <CardContent>
-                <Link
-                  href={`/author/${novel.author.slug}`}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                   <CircleUserRound className="h-5 w-5" />
                   <div>
                     <h3 className="font-medium text-gray-900">
-                      {novel.author.name}
+                      {novel.author}
                     </h3>
-                    <p className="text-sm text-gray-600">View Profile</p>
+                    <p className="text-sm text-gray-600">Author</p>
                   </div>
-                </Link>
+                </div>
               </CardContent>
             </Card>
           </div>

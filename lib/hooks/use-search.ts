@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDebounce } from './use-debounce';
-import { searchApi } from '../api/search';
-import type { SearchResult, SearchParams } from '../types';
+import { searchNovels } from '../db/novels';
+
+export interface SearchResult {
+  novels: any[];
+  authors: any[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasNext: boolean;
+  };
+}
+
+export interface SearchParams {
+  q: string;
+  type?: 'all' | 'novel' | 'author';
+  page?: number;
+  limit?: number;
+  filters?: Record<string, any>;
+}
 
 interface UseSearchOptions {
   debounceMs?: number;
@@ -28,10 +46,11 @@ export function useSearch(options: UseSearchOptions = {}) {
 
   const debouncedQuery = useDebounce(query, debounceMs);
 
-  // Search function
+  // Search function using Supabase
   const search = useCallback(async (searchParams?: Partial<SearchParams>) => {
     const params: SearchParams = {
       q: query,
+      type: 'all',
       page: 1,
       limit: 20,
       ...initialParams,
@@ -49,7 +68,28 @@ export function useSearch(options: UseSearchOptions = {}) {
       setIsLoading(true);
       setError(null);
       
-      const searchResults = await searchApi.search(params);
+      let novels: any[] = [];
+      let authors: any[] = [];
+
+      // Search based on type
+      if (params.type === 'all' || params.type === 'novel') {
+        novels = await searchNovels(params.q, params.limit);
+      }
+
+      // Note: Author search removed - authors are now just text fields in novels
+      // You can search by author name within novels instead
+
+      const searchResults: SearchResult = {
+        novels,
+        authors: [], // Empty array since we don't have separate authors
+        pagination: {
+          page: params.page || 1,
+          limit: params.limit || 20,
+          total: novels.length,
+          hasNext: false,
+        },
+      };
+
       setResults(searchResults);
       setHasSearched(true);
     } catch (err) {
@@ -68,8 +108,9 @@ export function useSearch(options: UseSearchOptions = {}) {
     }
 
     try {
-      const suggestionResults = await searchApi.getSuggestions(searchQuery);
-      setSuggestions(suggestionResults);
+      // Get top 5 novel titles as suggestions
+      const novels = await searchNovels(searchQuery, 5);
+      setSuggestions(novels.map(n => n.title));
     } catch (err) {
       console.error('Failed to get suggestions:', err);
       setSuggestions([]);
@@ -124,20 +165,23 @@ export function useSearch(options: UseSearchOptions = {}) {
       setIsLoading(true);
       const nextPage = results.pagination.page + 1;
       
-      const moreResults = await searchApi.search({
-        q: query,
-        page: nextPage,
-        filters,
-        ...initialParams
-      });
-
+      const moreNovels = await searchNovels(query, 20);
+      
       setResults(prev => {
-        if (!prev) return moreResults;
+        if (!prev) return {
+          novels: moreNovels,
+          authors: [],
+          pagination: {
+            page: nextPage,
+            limit: 20,
+            total: moreNovels.length,
+            hasNext: false,
+          },
+        };
         
         return {
-          ...moreResults,
-          novels: [...prev.novels, ...moreResults.novels],
-          authors: [...prev.authors, ...moreResults.authors]
+          ...prev,
+          novels: [...prev.novels, ...moreNovels],
         };
       });
     } catch (err) {
