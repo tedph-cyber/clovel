@@ -18,27 +18,30 @@ import {
 } from "lucide-react";
 import { useReadingProgress } from "@/lib/hooks/use-reading-progress";
 import { formatDate, formatReadingTime } from "@/lib/utils/formatters";
+import { getChapterBySlug, getNextChapter, getPreviousChapter, Chapter } from "@/lib/db/chapters";
+import { getNovelBySlug } from "@/lib/db/novels";
 
-interface Chapter {
-  id: string;
+interface ChapterData {
+  id: number;
   title: string;
   slug: string;
   content: string;
   chapter_number: number;
-  word_count: number;
-  published_at: string;
+  word_count: number | null;
+  created_at: string;
+  novel_slug: string;
   novel: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
   prev_chapter?: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
   next_chapter?: {
-    id: string;
+    id: number;
     title: string;
     slug: string;
   };
@@ -60,7 +63,7 @@ export default function ChapterPage() {
   // Extract chapter number from chapterId (e.g., 'chapter-1' -> '1')
   const chapterNumber = chapterId?.replace(/^chapter-/, "") || "";
 
-  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [chapter, setChapter] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -75,7 +78,7 @@ export default function ChapterPage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const { progress, updateProgress, markAsCompleted } = useReadingProgress({
-    novelId: chapter?.novel?.id || novelSlug,
+    novelId: chapter?.novel?.id.toString() || novelSlug,
     novelSlug: novelSlug,
     chapterId: chapterId,
     autoSave: true,
@@ -94,36 +97,61 @@ export default function ChapterPage() {
     localStorage.setItem("reading-settings", JSON.stringify(settings));
   }, [settings]);
 
-  // Fetch chapter data
+  // Fetch chapter data from Supabase
   useEffect(() => {
     const fetchChapter = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/${novelSlug}/${chapterId}`);
-        console.log("API call:", `/api/${novelSlug}/${chapterId}`);
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "Chapter not found"
-              : "Failed to fetch chapter"
-          );
+        // Fetch chapter and novel data from Supabase
+        const [chapterData, novelData] = await Promise.all([
+          getChapterBySlug(novelSlug, chapterId),
+          getNovelBySlug(novelSlug)
+        ]);
+        
+        if (!chapterData) {
+          setError('Chapter not found');
+          return;
         }
 
-        const data = await response.json();
-        console.log("Fetched chapter data:", data);
+        if (!novelData) {
+          setError('Novel not found');
+          return;
+        }
 
-        // set chapter data directly
-        setChapter(data);
+        // Fetch prev and next chapters using novel_slug
+        const [prevChapter, nextChapter] = await Promise.all([
+          getPreviousChapter(chapterData.novel_slug, chapterData.chapter_number),
+          getNextChapter(chapterData.novel_slug, chapterData.chapter_number),
+        ]);
 
-        // Track view using the new API structure
-        fetch(`/api/${novelSlug}/chapter-${chapterId}/view`, { method: "POST" }).catch(
-          console.error
-        );
+        // Combine data
+        const fullChapterData: ChapterData = {
+          ...chapterData,
+          novel: {
+            id: novelData.id,
+            title: novelData.title,
+            slug: novelData.slug,
+          },
+          prev_chapter: prevChapter ? {
+            id: prevChapter.id,
+            title: prevChapter.title,
+            slug: prevChapter.slug,
+          } : undefined,
+          next_chapter: nextChapter ? {
+            id: nextChapter.id,
+            title: nextChapter.title,
+            slug: nextChapter.slug,
+          } : undefined,
+        };
+
+        setChapter(fullChapterData);
+
+        // Note: View tracking removed as database doesn't have views table
       } catch (err) {
-        console.error("Failed to fetch chapter:", err);
-        setError(err instanceof Error ? err.message : "Failed to load chapter");
+        console.error('Failed to fetch chapter:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load chapter');
       } finally {
         setLoading(false);
       }
@@ -417,9 +445,9 @@ export default function ChapterPage() {
                {chapter.title}
               </h1>
               <div className="flex items-center justify-center space-x-4 text-sm opacity-75">
-                <span>{formatReadingTime(chapter.word_count)}</span>
+                <span>{formatReadingTime(chapter.word_count || 0)}</span>
                 <span>•</span>
-                <span>{formatDate(chapter.published_at)}</span>
+                <span>{formatDate(chapter.created_at)}</span>
               </div>
             </div>
           )}
