@@ -17,6 +17,31 @@ import {
 } from 'lucide-react';
 import { runDiagnostics } from '@/lib/utils/supabase-diagnostics';
 
+// Sanitize sensitive information from diagnostic results
+const sanitizeData = (data: any): any => {
+  if (typeof data !== 'object' || data === null) return data;
+  
+  const sanitized = Array.isArray(data) ? [...data] : { ...data };
+  
+  for (const key in sanitized) {
+    if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+      sanitized[key] = sanitizeData(sanitized[key]);
+    } else if (typeof sanitized[key] === 'string') {
+      // Redact URLs, keys, and other sensitive patterns
+      if (key.toLowerCase().includes('url') && sanitized[key].includes('.supabase.')) {
+        const url = new URL(sanitized[key]);
+        sanitized[key] = `${url.protocol}//${url.hostname.split('.')[0]}.***.[redacted]`;
+      } else if (key.toLowerCase().includes('key') && sanitized[key].length > 20) {
+        sanitized[key] = `${sanitized[key].substring(0, 8)}...[redacted]`;
+      } else if (key === 'email' || key.includes('email')) {
+        sanitized[key] = '[email-redacted]';
+      }
+    }
+  }
+  
+  return sanitized;
+};
+
 export default function DiagnosticsPage() {
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -67,9 +92,14 @@ export default function DiagnosticsPage() {
               Supabase Connection Diagnostics
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             Test and debug your Supabase database connection. Run diagnostics to identify and fix any issues.
           </p>
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-800">
+              <strong>Security Note:</strong> Sensitive information (URLs, keys, personal data) is automatically redacted in the output below.
+            </p>
+          </div>
         </div>
 
         {/* Actions */}
@@ -161,12 +191,12 @@ export default function DiagnosticsPage() {
                       <p className="font-medium">{results.results.environment.message}</p>
                       {results.results.environment.details && (
                         <pre className="mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
-                          {JSON.stringify(results.results.environment.details, null, 2)}
+                          {JSON.stringify(sanitizeData(results.results.environment.details), null, 2)}
                         </pre>
                       )}
                       {results.results.environment.error && (
                         <pre className="mt-2 p-3 bg-red-50 rounded text-xs overflow-x-auto text-red-900">
-                          {JSON.stringify(results.results.environment.error, null, 2)}
+                          {JSON.stringify(sanitizeData(results.results.environment.error), null, 2)}
                         </pre>
                       )}
                     </div>
@@ -193,12 +223,12 @@ export default function DiagnosticsPage() {
                     <p className="font-medium">{results.results.connection.message}</p>
                     {results.results.connection.details && (
                       <pre className="mt-2 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
-                        {JSON.stringify(results.results.connection.details, null, 2)}
+                        {JSON.stringify(sanitizeData(results.results.connection.details), null, 2)}
                       </pre>
                     )}
                     {results.results.connection.error && (
                       <pre className="mt-2 p-3 bg-red-50 rounded text-xs overflow-x-auto text-red-900">
-                        {JSON.stringify(results.results.connection.error, null, 2)}
+                        {JSON.stringify(sanitizeData(results.results.connection.error), null, 2)}
                       </pre>
                     )}
                   </div>
@@ -227,7 +257,7 @@ export default function DiagnosticsPage() {
                         <p className="text-sm text-gray-600">{result.message}</p>
                         {result.error && (
                           <pre className="mt-2 p-2 bg-red-50 rounded text-xs overflow-x-auto text-red-900">
-                            {JSON.stringify(result.error, null, 2)}
+                            {JSON.stringify(sanitizeData(result.error), null, 2)}
                           </pre>
                         )}
                       </div>
@@ -258,12 +288,12 @@ export default function DiagnosticsPage() {
                         <p className="text-sm text-gray-600">{result.message}</p>
                         {result.details && (
                           <pre className="mt-2 p-2 bg-white rounded text-xs overflow-x-auto">
-                            {JSON.stringify(result.details, null, 2)}
+                            {JSON.stringify(sanitizeData(result.details), null, 2)}
                           </pre>
                         )}
                         {result.error && (
                           <pre className="mt-2 p-2 bg-red-50 rounded text-xs overflow-x-auto text-red-900">
-                            {JSON.stringify(result.error, null, 2)}
+                            {JSON.stringify(sanitizeData(result.error), null, 2)}
                           </pre>
                         )}
                       </div>

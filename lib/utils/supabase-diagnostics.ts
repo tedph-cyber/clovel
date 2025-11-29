@@ -125,7 +125,7 @@ export function testEnvironmentVariables(): ConnectionTestResult {
     success: true,
     message: 'Environment variables are configured',
     details: {
-      url: url.substring(0, 30) + '...',
+      url: `${url.split('.')[0]}.***.[redacted]`,
       keyLength: key.length,
     },
   };
@@ -158,7 +158,7 @@ export async function testSampleQueries(): Promise<Record<string, ConnectionTest
       results.fetchNovels = {
         success: true,
         message: `Successfully fetched ${data?.length || 0} novels`,
-        details: { count: data?.length, samples: data?.slice(0, 2) },
+        details: { count: data?.length },
       };
     }
   } catch (error: any) {
@@ -197,7 +197,7 @@ export async function testSampleQueries(): Promise<Record<string, ConnectionTest
       results.fetchNovelsWithAuthor = {
         success: true,
         message: `Successfully fetched ${data?.length || 0} novels with authors`,
-        details: { count: data?.length, samples: data?.slice(0, 2) },
+        details: { count: data?.length },
       };
     }
   } catch (error: any) {
@@ -228,7 +228,7 @@ export async function testSampleQueries(): Promise<Record<string, ConnectionTest
       results.fetchAuthors = {
         success: true,
         message: `Successfully fetched ${data?.length || 0} authors`,
-        details: { count: data?.length, samples: data },
+        details: { count: data?.length },
       };
     }
   } catch (error: any) {

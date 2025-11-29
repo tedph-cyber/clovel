@@ -198,18 +198,18 @@ export default function HomePage() {
             Join our community of passionate readers and discover your next obsession.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-orange-400 hover:from-emerald-600 hover:to-orange-500 text-white" asChild>
-              <Link href="/search">
+            <Link href="/search">
+              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-orange-400 hover:from-emerald-600 hover:to-orange-500 text-white">
                 <BookOpen className="mr-2 h-5 w-5" />
                 Browse Novels
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/search?sort_by=rating">
+              </Button>
+            </Link>
+            <Link href="/search?sort_by=rating">
+              <Button variant="outline" size="lg">
                 <Star className="mr-2 h-5 w-5" />
                 Top Rated
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -246,9 +246,9 @@ export default function HomePage() {
               <Star className="h-6 w-6 text-yellow-500" />
               <h2 className="text-3xl font-bold text-gray-900">Featured Novels</h2>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/search?sort_by=rating&min_rating=4.0">View All</Link>
-            </Button>
+            <Link href="/search?sort_by=rating&min_rating=4.0">
+              <Button variant="outline">View All</Button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
@@ -267,9 +267,9 @@ export default function HomePage() {
               <TrendingUp className="h-6 w-6 text-red-500" />
               <h2 className="text-3xl font-bold text-gray-900">Trending Now</h2>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/search?sort_by=view_count">View All</Link>
-            </Button>
+            <Link href="/search?sort_by=view_count">
+              <Button variant="outline">View All</Button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -288,9 +288,9 @@ export default function HomePage() {
               <Clock className="h-6 w-6 text-green-500" />
               <h2 className="text-3xl font-bold text-gray-900">Recently Updated</h2>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/search?sort_by=updated_at">View All</Link>
-            </Button>
+            <Link href="/search?sort_by=updated_at">
+              <Button variant="outline">View All</Button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -309,16 +309,16 @@ export default function HomePage() {
           Start your reading journey today!
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" variant="secondary" asChild>
-            <Link href="/register">
+          <Link href="/register">
+            <Button size="lg" variant="secondary">
               Create Account
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/search" className="border-white text-white hover:bg-white hover:text-gray-900">
+            </Button>
+          </Link>
+          <Link href="/search">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
               Browse Without Account
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </section>
     </div>
