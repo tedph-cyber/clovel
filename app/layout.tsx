@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Indie_Flower, Sanchez, Righteous } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import { Header } from "@/components/ui/header-with-search";
 import Footer from "@/components/Footer";
 
 const outfit = Outfit({
@@ -49,7 +49,7 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${indieFlower.variable} ${sanchez.variable} ${righteous.variable} font-sans bg-gradient-to-br from-emerald-50 via-white to-orange-50 min-h-screen antialiased`}
       >
-        <Navbar />
+        <Header />
         {children}
         <Footer />
       </body>

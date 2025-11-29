@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import TetrisLoading from '@/components/ui/tetris-loader';
 import { 
   CheckCircle, 
   XCircle, 
@@ -103,10 +104,7 @@ export default function DiagnosticsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <RefreshCw className="h-12 w-12 text-blue-600 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-600">Running diagnostics tests...</p>
-                </div>
+                <TetrisLoading size="md" speed="normal" loadingText="Running diagnostics tests..." />
               </div>
             </CardContent>
           </Card>

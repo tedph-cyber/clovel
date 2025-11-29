@@ -56,21 +56,21 @@ export default function TetrisDemo() {
                 </label>
                 <div className="flex gap-2">
                   <Button
-                    variant={size === 'sm' ? 'primary' : 'outline'}
+                    variant={size === 'sm' ? 'default' : 'outline'}
                     onClick={() => setSize('sm')}
                     size="sm"
                   >
                     Small
                   </Button>
                   <Button
-                    variant={size === 'md' ? 'primary' : 'outline'}
+                    variant={size === 'md' ? 'default' : 'outline'}
                     onClick={() => setSize('md')}
                     size="sm"
                   >
                     Medium
                   </Button>
                   <Button
-                    variant={size === 'lg' ? 'primary' : 'outline'}
+                    variant={size === 'lg' ? 'default' : 'outline'}
                     onClick={() => setSize('lg')}
                     size="sm"
                   >
@@ -86,21 +86,21 @@ export default function TetrisDemo() {
                 </label>
                 <div className="flex gap-2">
                   <Button
-                    variant={speed === 'slow' ? 'primary' : 'outline'}
+                    variant={speed === 'slow' ? 'default' : 'outline'}
                     onClick={() => setSpeed('slow')}
                     size="sm"
                   >
                     Slow
                   </Button>
                   <Button
-                    variant={speed === 'normal' ? 'primary' : 'outline'}
+                    variant={speed === 'normal' ? 'default' : 'outline'}
                     onClick={() => setSpeed('normal')}
                     size="sm"
                   >
                     Normal
                   </Button>
                   <Button
-                    variant={speed === 'fast' ? 'primary' : 'outline'}
+                    variant={speed === 'fast' ? 'default' : 'outline'}
                     onClick={() => setSpeed('fast')}
                     size="sm"
                   >

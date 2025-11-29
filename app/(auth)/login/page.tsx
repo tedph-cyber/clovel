@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import TetrisLoading from '@/components/ui/tetris-loader';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, BookOpen, Users, Sparkles, CheckCircle } from 'lucide-react';
 
 // Loading component for Suspense fallback
@@ -17,7 +18,7 @@ function LoginLoading() {
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1 pb-6">
             <div className="flex items-center justify-center mb-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+              <TetrisLoading size="sm" speed="normal" showLoadingText={false} />
             </div>
             <CardTitle className="text-2xl font-bold text-center text-gray-900">
               Loading...
@@ -293,7 +294,9 @@ function LoginPageContent() {
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="scale-50">
+                          <TetrisLoading size="sm" speed="fast" showLoadingText={false} />
+                        </div>
                         <span>Signing In...</span>
                       </div>
                     ) : (

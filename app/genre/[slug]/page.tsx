@@ -18,6 +18,7 @@ import {
   List as ListIcon
 } from 'lucide-react';
 import { formatNumber, formatDate } from '@/lib/utils/formatters';
+import TetrisLoading from '@/components/ui/tetris-loader';
 import { GENRES } from '@/lib/constants/genres';
 
 interface Novel {
@@ -331,14 +332,14 @@ export default function GenrePage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === 'grid' ? 'primary' : 'outline'}
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('grid')}
           >
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'primary' : 'outline'}
+            variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
           >
@@ -401,10 +402,7 @@ export default function GenrePage() {
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading novels...</p>
-          </div>
+          <TetrisLoading size="md" speed="normal" loadingText="Loading novels..." />
         </div>
       )}
 

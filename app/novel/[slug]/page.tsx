@@ -32,6 +32,7 @@ import {
   formatDate,
   formatReadingTime,
 } from "@/lib/utils/formatters";
+import TetrisLoading from "@/components/ui/tetris-loader";
 import { getNovelBySlug, Novel } from "@/lib/db/novels";
 import { getChaptersByNovelSlug, Chapter } from "@/lib/db/chapters";
 
@@ -114,10 +115,7 @@ export default function NovelDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center md:min-h-[400px] min-h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading novel...</p>
-          </div>
+          <TetrisLoading size="md" speed="normal" loadingText="Loading novel..." />
         </div>
       </div>
     );
@@ -134,9 +132,9 @@ export default function NovelDetailPage() {
           <p className="text-gray-600 mb-4">
             {error || "The novel you're looking for doesn't exist."}
           </p>
-          <Button asChild variant="outline">
-            <Link href="/search">Browse Novels</Link>
-          </Button>
+          <Link href="/search">
+            <Button variant="outline">Browse Novels</Button>
+          </Link>
         </div>
       </div>
     );
@@ -196,7 +194,12 @@ export default function NovelDetailPage() {
 
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <Rating rating={novel.rating || 0} size="md" readonly showValue />
+                  <Rating
+                    rating={novel.rating || 0}
+                    size="md"
+                    readonly
+                    showValue
+                  />
                   <span className="text-sm text-gray-500">
                     ({formatNumber(0)} reviews)
                   </span>
@@ -283,11 +286,9 @@ export default function NovelDetailPage() {
               <div className="flex items-center justify-between">
                 <CardTitle>Chapters ({novel.total_chapters || 0})</CardTitle>
                 {chapters.length > 0 && (
-                  <Button asChild>
-                    <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
-                      Start Reading
-                    </Link>
-                  </Button>
+                  <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
+                    <Button>Start Reading</Button>
+                  </Link>
                 )}
               </div>
             </CardHeader>
@@ -400,9 +401,11 @@ export default function NovelDetailPage() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                   <CircleUserRound className="h-5 w-5" />
                   <div>
-                    <h3 className="font-medium text-gray-900">
-                      {novel.author}
-                    </h3>
+                    <Link href={`/author/${novel.author.toLowerCase()}`}>
+                      <h3 className="font-medium text-gray-900">
+                        {novel.author}
+                      </h3>
+                    </Link>
                     <p className="text-sm text-gray-600">Author</p>
                   </div>
                 </div>

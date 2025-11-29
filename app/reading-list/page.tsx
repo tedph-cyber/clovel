@@ -20,6 +20,7 @@ import {
   Star
 } from 'lucide-react';
 import { formatNumber, formatDate } from '@/lib/utils/formatters';
+import TetrisLoading from '@/components/ui/tetris-loader';
 
 interface ReadingListNovel {
   id: string;
@@ -482,10 +483,7 @@ export default function ReadingListPage() {
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your reading list...</p>
-          </div>
+          <TetrisLoading size="md" speed="normal" loadingText="Loading your reading list..." />
         </div>
       )}
 
@@ -561,14 +559,14 @@ export default function ReadingListPage() {
 
               <div className="flex items-center gap-2">
                 <Button
-                  variant={viewMode === 'grid' ? 'primary' : 'outline'}
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'primary' : 'outline'}
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('list')}
                 >
@@ -709,7 +707,7 @@ export default function ReadingListPage() {
 
                 {searchLoading && (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <TetrisLoading size="sm" speed="fast" showLoadingText={false} />
                   </div>
                 )}
 

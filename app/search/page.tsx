@@ -13,6 +13,7 @@ import { useSearch } from "@/lib/hooks/use-search";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { GENRES } from "@/lib/constants/genres";
 import { formatNumber, formatDate } from "@/lib/utils/formatters";
+import TetrisLoading from "@/components/ui/tetris-loader";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -24,8 +25,7 @@ function SearchLoading() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Search Novels</h1>
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-            <span className="ml-2 text-gray-600">Loading search...</span>
+            <TetrisLoading size="md" speed="normal" loadingText="Loading search..." />
           </div>
         </div>
       </div>
@@ -151,11 +151,13 @@ function SearchPageContent() {
               onClick={handleSearch}
               disabled={query.trim().length < 2 || isLoading}
               className="h-12 px-6"
-              variant="primary"
+              variant="default"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="mr-2">
+                    <TetrisLoading size="sm" speed="fast" showLoadingText={false} />
+                  </div>
                   Searching...
                 </>
               ) : (
@@ -169,7 +171,7 @@ function SearchPageContent() {
                 {(["all", "novel", "author"] as const).map((type) => (
               <Button
                 key={type}
-                variant={searchType === type ? "primary" : "outline"}
+                variant={searchType === type ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSearchType(type)}
               >
@@ -311,8 +313,7 @@ function SearchPageContent() {
           <div className="flex-1">
             {isLoading && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-                <span className="ml-2 text-gray-600">Searching...</span>
+                <TetrisLoading size="md" speed="fast" loadingText="Searching..." />
               </div>
             )}
 

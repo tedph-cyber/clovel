@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import TetrisLoading from '@/components/ui/tetris-loader';
 import { Eye, EyeOff, User, Mail, Lock, ArrowRight, BookOpen } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -290,7 +291,9 @@ export default function RegisterPage() {
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="scale-50">
+                          <TetrisLoading size="sm" speed="fast" showLoadingText={false} />
+                        </div>
                         <span>Creating Account...</span>
                       </div>
                     ) : (
