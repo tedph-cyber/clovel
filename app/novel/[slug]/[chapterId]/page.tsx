@@ -293,16 +293,16 @@ export default function ChapterPage() {
             <div className="flex items-center justify-between h-16">
               {/* Left side - Navigation */}
               <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/">
+                <Link href="/">
+                  <Button variant="ghost" size="sm">
                     <Home className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/novel/${novelSlug}`}>
+                  </Button>
+                </Link>
+                <Link href={`/novel/${novelSlug}`}>
+                  <Button variant="ghost" size="sm">
                     <List className="h-4 w-4" />
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </div>
 
               {/* Center - Chapter info */}
@@ -533,12 +533,12 @@ export default function ChapterPage() {
               </div>
 
               <div className="md:px-4">
-                <Button variant="outline" asChild className="w-full md:w-auto">
-                  <Link href={`/novel/${novelSlug}`}>
+                <Link href={`/novel/${novelSlug}`}>
+                  <Button variant="outline" className="w-full md:w-auto">
                     <List className="h-4 w-4 mr-2" />
                     Chapter List
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </div>
 
               <div className="flex-1 min-w-0">
@@ -575,11 +575,11 @@ export default function ChapterPage() {
             className={`flex items-center space-x-2 px-4 py-2 rounded-full shadow-lg ${getThemeClasses()}`}
           >
             {chapter.prev_chapter && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}>
+              <Link href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}>
+                <Button variant="ghost" size="sm">
                   <ChevronLeft className="h-4 w-4" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             )}
 
             <Button
@@ -591,11 +591,11 @@ export default function ChapterPage() {
             </Button>
 
             {chapter.next_chapter && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}>
+              <Link href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}>
+                <Button variant="ghost" size="sm">
                   <ChevronRight className="h-4 w-4" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             )}
           </div>
         </div>
