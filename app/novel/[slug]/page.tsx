@@ -113,7 +113,7 @@ export default function NovelDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 min-h-screen py-8">
         <div className="flex items-center justify-center md:min-h-[400px] min-h-full">
           <TetrisLoading size="md" speed="normal" loadingText="Loading novel..." />
         </div>
@@ -143,7 +143,7 @@ export default function NovelDetailPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+      <nav className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 overflow-x-auto pb-1">
         <Link href="/" className="hover:text-emerald-600">
           Home
         </Link>
@@ -159,10 +159,10 @@ export default function NovelDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2">
           {/* Novel Header */}
-          <div className="flex flex-col md:flex-row gap-6 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Cover Image */}
-            <div className="flex-shrink-0">
-              <div className="w-48 h-72 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden shadow-lg">
+            <div className="flex-shrink-0 mx-auto sm:mx-0">
+              <div className="w-40 h-60 sm:w-48 sm:h-72 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden shadow-lg">
                 {novel.cover_url ? (
                   <Image
                     src={novel.cover_url}
@@ -181,7 +181,7 @@ export default function NovelDetailPage() {
 
             {/* Novel Info */}
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
                 {novel.title}
               </h1>
 
@@ -209,34 +209,34 @@ export default function NovelDetailPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     {formatNumber(novel.total_chapters || 0)}
                   </div>
                   <div className="text-sm text-gray-600">Chapters</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     {formatNumber(0)}
                   </div>
-                  <div className="text-sm text-gray-600">Views</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Views</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">
                     {formatNumber(0)}
                   </div>
-                  <div className="text-sm text-gray-600">Bookmarks</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Bookmarks</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">
+                <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">
                     {formatReadingTime(0)}
                   </div>
-                  <div className="text-sm text-gray-600">Read Time</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Read Time</div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
                 <Button
                   onClick={handleAddToReadingList}
                   className="flex items-center gap-2"

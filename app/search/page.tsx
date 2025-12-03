@@ -127,30 +127,30 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {/* Search Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
             Search Novels
           </h1>
 
           {/* Search Input */}
           <div className="relative max-w-2xl flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
               <Input
                 type="text"
                 placeholder="Search for novels, authors..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="pl-10 pr-4 h-12 text-lg"
+                className="pl-9 sm:pl-10 pr-3 sm:pr-4 h-10 sm:h-12 text-sm sm:text-lg"
               />
             </div>
             <Button
               onClick={handleSearch}
               disabled={query.trim().length < 2 || isLoading}
-              className="h-12 px-6"
+              className="h-10 sm:h-12 px-4 sm:px-6 text-sm sm:text-base"
               variant="default"
             >
               {isLoading ? (
@@ -167,12 +167,13 @@ function SearchPageContent() {
           </div>
 
           {/* Search Type Tabs */}
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-1 sm:gap-2 mt-3 sm:mt-4">
                 {(["all", "novel", "author"] as const).map((type) => (
               <Button
                 key={type}
                 variant={searchType === type ? "default" : "outline"}
                 size="sm"
+                className="text-xs sm:text-sm px-2 sm:px-3"
                 onClick={() => setSearchType(type)}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -190,13 +191,13 @@ function SearchPageContent() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* Filters Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Filters</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Filters</CardTitle>
                   <div className="flex items-center gap-2">
                     {hasActiveFilters && (
                       <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -216,17 +217,17 @@ function SearchPageContent() {
               </CardHeader>
 
               <CardContent
-                className={`space-y-6 ${
+                className={`space-y-4 sm:space-y-6 px-3 sm:px-4 ${
                   showFilters ? "block" : "hidden lg:block"
                 }`}
               >
                 {/* Sort By */}
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Sort By</h3>
+                  <h3 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Sort By</h3>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="relevance">Relevance</option>
                     <option value="rating">Rating</option>
@@ -239,17 +240,17 @@ function SearchPageContent() {
 
                 {/* Genres */}
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Genres</h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <h3 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Genres</h3>
+                  <div className="space-y-1.5 sm:space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
                     {GENRES.map((genre) => (
                       <label key={genre.id} className="flex items-center">
                         <input
                           type="checkbox"
                           checked={selectedGenres.includes(genre.id)}
                           onChange={() => handleGenreToggle(genre.id)}
-                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                         />
-                        <span className="ml-2 text-sm text-gray-700">
+                        <span className="ml-2 text-xs sm:text-sm text-gray-700">
                           {genre.name}
                         </span>
                       </label>
@@ -259,17 +260,17 @@ function SearchPageContent() {
 
                 {/* Status */}
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Status</h3>
-                  <div className="space-y-2">
+                  <h3 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Status</h3>
+                  <div className="space-y-1.5 sm:space-y-2">
                     {["ongoing", "completed", "hiatus"].map((status) => (
                       <label key={status} className="flex items-center">
                         <input
                           type="checkbox"
                           checked={selectedStatus.includes(status)}
                           onChange={() => handleStatusToggle(status)}
-                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                         />
-                        <span className="ml-2 text-sm text-gray-700 capitalize">
+                        <span className="ml-2 text-xs sm:text-sm text-gray-700 capitalize">
                           {status}
                         </span>
                       </label>
@@ -279,10 +280,10 @@ function SearchPageContent() {
 
                 {/* Minimum Rating */}
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">
+                  <h3 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">
                     Minimum Rating
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {[0, 3, 4, 4.5].map((rating) => (
                       <label key={rating} className="flex items-center">
                         <input
@@ -290,11 +291,11 @@ function SearchPageContent() {
                           name="minRating"
                           checked={minRating === rating}
                           onChange={() => setMinRating(rating)}
-                          className="rounded-full border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                          className="rounded-full border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                         />
                         <span className="ml-2 flex items-center">
                           {rating === 0 ? (
-                            <span className="text-sm text-gray-700">
+                            <span className="text-xs sm:text-sm text-gray-700">
                               Any Rating
                             </span>
                           ) : (
@@ -342,10 +343,10 @@ function SearchPageContent() {
                 {(searchType === "all" || searchType === "novel") &&
                   results.novels.length > 0 && (
                     <div className="mb-8">
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                         Novels ({results.novels.length})
                       </h3>
-                      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                         {results.novels.map((novel) => (
                           <Card
                             key={novel.id}
@@ -354,7 +355,7 @@ function SearchPageContent() {
                             <CardContent className="p-0">
                               <div className="flex flex-col py-2">
                                 {/* Cover Image Section */}
-                                <div className="flex-shrink-0 py-4 w-full h-96 relative bg-gray-100">
+                                <div className="flex-shrink-0 py-2 sm:py-4 w-full h-64 sm:h-80 md:h-96 relative bg-gray-100">
                                   <Image
                                     src={
                                       novel.cover_url || "/placeholder-book.jpg"
@@ -366,16 +367,16 @@ function SearchPageContent() {
                                 </div>
                                 
                                 {/* Content Section */}
-                                <div className="p-4 flex-1">
+                                <div className="p-3 sm:p-4 flex-1">
                                   {/* Title and Author */}
-                                  <div className="mb-3">
+                                  <div className="mb-2 sm:mb-3">
                                     <Link
                                       href={`/novel/${novel.slug}`}
-                                      className="text-lg font-semibold text-gray-900 hover:text-emerald-600 line-clamp-2 transition-colors"
+                                      className="text-base sm:text-lg font-semibold text-gray-900 hover:text-emerald-600 line-clamp-2 transition-colors"
                                     >
                                       {novel.title}
                                     </Link>
-                                    <div className="text-sm text-gray-600 mt-1">
+                                    <div className="text-xs sm:text-sm text-gray-600 mt-1">
                                       by {novel.author}
                                     </div>
                                   </div>
@@ -441,11 +442,11 @@ function SearchPageContent() {
                 {/* Authors Results */}
                 {(searchType === "all" || searchType === "author") &&
                   results.authors.length > 0 && (
-                    <div className="mb-8">
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    <div className="mb-6 sm:mb-8">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                         Authors ({results.authors.length})
                       </h3>
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
                         {results.authors.map((author) => (
                           <Card
                             key={author.id}

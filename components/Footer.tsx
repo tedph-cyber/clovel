@@ -4,12 +4,12 @@ const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
 
 export default function Footer() {
     return (
-    <footer className="sm:p-2 pb-4 text-center text-xs flex-col flex justify-center text-gray-500 sm:justify-around items-center sm:flex-row sm:items-center sm:text-sm border-gray-200">
-    <div className="flex items-center text-lg mb-2">
-       <Image src="/clovel.png" alt="Logo" height={32} width={40} className="border rounded-lg mr-2" />
+    <footer className="p-3 sm:p-4 md:p-6 text-center text-xs sm:text-sm flex-col flex justify-center text-gray-500 sm:justify-around items-center sm:flex-row sm:items-center border-t border-gray-200 mt-auto">
+    <div className="flex items-center text-base sm:text-lg mb-2 sm:mb-0">
+       <Image src="/clovel.png" alt="Logo" height={28} width={35} className="border rounded-lg mr-2 sm:h-8 sm:w-10" />
        <span className={pacifico.className}>Clovel</span>
     </div>
-        &copy; {new Date().getFullYear()} Clovel. All rights reserved.
+        <div className="text-xs sm:text-sm">&copy; {new Date().getFullYear()} Clovel. All rights reserved.</div>
     </footer>
     )
 }

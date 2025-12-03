@@ -277,9 +277,9 @@ export default function GenrePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+      <nav className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
         <Link href="/" className="hover:text-blue-600">Home</Link>
         <ChevronRight className="h-4 w-4" />
         <Link href="/genres" className="hover:text-blue-600">Genres</Link>
@@ -288,38 +288,38 @@ export default function GenrePage() {
       </nav>
 
       {/* Genre Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{genreInfo.name} Novels</h1>
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">{genreInfo.name} Novels</h1>
         {genreInfo.description && (
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">
             {genreInfo.description}
           </p>
         )}
-        <div className="mt-4">
-          <Badge variant="secondary" className="text-lg px-4 py-2">
+        <div className="mt-3 sm:mt-4">
+          <Badge variant="secondary" className="text-sm sm:text-base md:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
             {formatNumber(pagination.total)} novels available
           </Badge>
         </div>
       </div>
 
       {/* Filters and View Controls */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-4 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-9 sm:h-10 text-sm"
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Filters
           </Button>
 
-          <div className="flex items-center gap-2">
-            <SortAsc className="h-4 w-4 text-gray-600" />
+          <div className="flex items-center gap-2 w-full xs:w-auto">
+            <SortAsc className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 xs:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="updated_at">Recently Updated</option>
               <option value="rating">Highest Rated</option>
@@ -330,35 +330,37 @@ export default function GenrePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
+            className="h-8 w-8 sm:h-9 sm:w-9 p-0"
             onClick={() => setViewMode('grid')}
           >
-            <Grid className="h-4 w-4" />
+            <Grid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
+            className="h-8 w-8 sm:h-9 sm:w-9 p-0"
             onClick={() => setViewMode('list')}
           >
-            <ListIcon className="h-4 w-4" />
+            <ListIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="mb-4 sm:mb-6">
+          <CardContent className="p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Status</option>
                   <option value="ongoing">Ongoing</option>
@@ -368,11 +370,11 @@ export default function GenrePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Minimum Rating</label>
                 <select
                   value={minRating}
                   onChange={(e) => setMinRating(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value={0}>Any Rating</option>
                   <option value={3}>3+ Stars</option>
@@ -384,12 +386,13 @@ export default function GenrePage() {
               <div className="flex items-end">
                 <Button
                   variant="outline"
+                  size="sm"
+                  className="w-full h-8 sm:h-9 text-xs sm:text-sm"
                   onClick={() => {
                     setStatus('');
                     setMinRating(0);
                     setSortBy('updated_at');
                   }}
-                  className="w-full"
                 >
                   Clear Filters
                 </Button>
@@ -439,8 +442,8 @@ export default function GenrePage() {
             <>
               <div className={
                 viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-                  : 'space-y-4'
+                  ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6'
+                  : 'space-y-3 sm:space-y-4'
               }>
                 {novels.map((novel) => 
                   viewMode === 'grid' 
@@ -451,7 +454,7 @@ export default function GenrePage() {
 
               {/* Pagination */}
               {pagination.total_pages > 1 && (
-                <div className="flex justify-center mt-12">
+                <div className="flex justify-center mt-8 sm:mt-10 md:mt-12">
                   <Pagination
                     currentPage={pagination.page}
                     totalPages={pagination.total_pages}

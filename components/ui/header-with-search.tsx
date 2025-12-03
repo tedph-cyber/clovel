@@ -110,28 +110,28 @@ export function Header() {
 
   return (
     <header className="bg-white/90 backdrop-blur-sm container mx-auto max-w-full border-emerald-100 border-b shadow-lg sticky top-0 z-50">
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-1.5 sm:space-x-2">
             <Image
               src="/clovel.png"
               alt="Logo"
-              height={32}
-              width={60}
-              className="border rounded-lg"
+              height={28}
+              width={50}
+              className="border rounded-lg sm:h-8 sm:w-[60px]"
             />
-            <span className={`${pacifico.className} text-emerald-600 text-xl`}>Clovel</span>
+            <span className={`${pacifico.className} text-emerald-600 text-lg sm:text-xl`}>Clovel</span>
           </Link>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex md:items-center md:space-x-6">
+        <nav className="hidden md:flex md:items-center md:space-x-4 lg:space-x-6">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
+              className="text-xs lg:text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
             >
               {item.name}
             </Link>
@@ -139,16 +139,16 @@ export function Header() {
         </nav>
 
         {/* Desktop Search and Mobile Menu */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
           {/* Search Modal */}
           <SearchModal data={novels}>
             <Button
               variant="outline"
-              className="relative h-9 w-9 p-0 md:border xl:h-9 xl:w-60 xl:justify-between xl:px-3 xl:py-2 hover:bg-emerald-50 border-emerald-200"
+              className="relative h-8 w-8 p-0 sm:h-9 sm:w-9 md:border xl:h-9 xl:w-60 xl:justify-between xl:px-3 xl:py-2 hover:bg-emerald-50 border-emerald-200"
             >
               <span className="hidden xl:inline-flex text-gray-500">Search novels...</span>
               <span className="sr-only">Search</span>
-              <SearchIcon className="h-4 w-4 text-emerald-600" />
+              <SearchIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600" />
             </Button>
           </SearchModal>
 
@@ -159,9 +159,9 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 w-9 px-0 hover:bg-emerald-50"
+                  className="h-8 w-8 sm:h-9 sm:w-9 px-0 hover:bg-emerald-50"
                 >
-                  <Menu className="h-5 w-5 text-emerald-600" />
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
@@ -172,24 +172,24 @@ export function Header() {
               >
                 <div className="flex flex-col h-full">
                   {/* Mobile Header */}
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-200">
+                    <div className="flex items-center space-x-1.5 sm:space-x-2">
                       <Image
                         src="/clovel.png"
                         alt="Logo"
-                        height={24}
-                        width={45}
-                        className="border rounded-lg"
+                        height={22}
+                        width={38}
+                        className="border rounded-lg sm:h-6 sm:w-[45px]"
                       />
-                      <span className={`${pacifico.className} text-emerald-600 text-lg`}>Clovel</span>
+                      <span className={`${pacifico.className} text-emerald-600 text-base sm:text-lg`}>Clovel</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 px-0 hover:bg-gray-100"
+                      className="h-8 w-8 sm:h-9 sm:w-9 px-0 hover:bg-gray-100"
                       onClick={() => setIsOpen(false)}
                     >
-                      <X className="h-6 w-6 text-gray-600" />
+                      <X className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </div>
 

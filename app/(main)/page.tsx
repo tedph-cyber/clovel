@@ -189,15 +189,15 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="text-center mb-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
             Discover Your Next
             <span className="text-emerald-600"> Favorite Novel</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8">
             Dive into captivating stories from talented authors around the world. 
             Join our community of passionate readers and discover your next obsession.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link href="/search">
               <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-orange-400 hover:from-emerald-600 hover:to-orange-500 text-white">
                 <BookOpen className="mr-2 h-5 w-5" />
@@ -244,14 +244,14 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Star className="h-6 w-6 text-yellow-500" />
-              <h2 className="text-3xl font-bold text-gray-900">Featured Novels</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Featured Novels</h2>
             </div>
             <Link href="/search?sort_by=rating&min_rating=4.0">
               <Button variant="outline">View All</Button>
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
             {featuredNovels.map((novel) => (
               <NovelCard key={novel.id} novel={novel} />
             ))}

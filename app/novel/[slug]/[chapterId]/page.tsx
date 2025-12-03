@@ -289,48 +289,50 @@ export default function ChapterPage() {
         <header
           className={`sticky top-0 z-10 border-b transition-all duration-200 ${getThemeClasses()}`}
         >
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
+          <div className="container mx-auto px-2 sm:px-4">
+            <div className="flex items-center justify-between h-14 sm:h-16">
               {/* Left side - Navigation */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Link href="/">
-                  <Button variant="ghost" size="sm">
-                    <Home className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className="h-9 w-9 p-0 sm:h-10 sm:w-10">
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </Link>
                 <Link href={`/novel/${novelSlug}`}>
-                  <Button variant="ghost" size="sm">
-                    <List className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className="h-9 w-9 p-0 sm:h-10 sm:w-10">
+                    <List className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </Link>
               </div>
 
               {/* Center - Chapter info */}
-              <div className="flex-1 text-center px-4">
-                <h1 className="font-medium truncate">{chapter.title}</h1>
-                <p className="text-sm opacity-75 truncate">
+              <div className="flex-1 text-center px-2 sm:px-4 min-w-0">
+                <h1 className="text-xs sm:text-sm md:text-base font-medium truncate">{chapter.title}</h1>
+                <p className="hidden xs:block text-xs sm:text-sm opacity-75 truncate">
                   {chapter.novel.title}
                 </p>
               </div>
 
               {/* Right side - Controls */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-9 w-9 p-0 sm:h-10 sm:w-10"
                   onClick={() => setShowSettings(!showSettings)}
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-9 w-9 p-0 sm:h-10 sm:w-10"
                   onClick={() => setIsFullscreen(!isFullscreen)}
                 >
                   {isFullscreen ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                   )}
                 </Button>
               </div>
@@ -352,9 +354,9 @@ export default function ChapterPage() {
         <div
           className={`border-b transition-all duration-200 ${getThemeClasses()}`}
         >
-          <div className="container mx-auto px-4 py-6">
-            <h3 className="text-sm font-semibold mb-4 opacity-75">Reading Settings</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+            <h3 className="text-sm font-semibold mb-3 sm:mb-4 opacity-75">Reading Settings</h3>
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {/* Font Size */}
               <div>
                 <label className="block text-sm font-medium mb-2 opacity-75">
@@ -441,16 +443,16 @@ export default function ChapterPage() {
       )}
 
       {/* Chapter Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+        <div className="max-w-4xl mx-auto">
           {/* Chapter Header */}
           {!isFullscreen && (
             <div className="text-center mb-12 pb-8 border-b border-current border-opacity-10">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">{chapter.title}</h1>
-              <div className="flex items-center justify-center space-x-4 text-sm opacity-60">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm opacity-60">
                 <span>{formatReadingTime(chapter.word_count || 0)}</span>
-                <span>•</span>
-                <span>{formatDate(chapter.created_at)}</span>
+                <span className="hidden xs:inline">•</span>
+                <span className="text-xs sm:text-sm">{formatDate(chapter.created_at)}</span>
               </div>
             </div>
           )}
@@ -463,8 +465,8 @@ export default function ChapterPage() {
                 ${getFontSizeClass()} 
                 ${getFontFamilyClass()} 
                 ${getLineHeightClass()}
-                px-4 md:px-8
-                py-8
+                px-3 sm:px-4 md:px-8
+                py-4 sm:py-6 md:py-8
               `}
             >
               {(() => {
@@ -497,7 +499,7 @@ export default function ChapterPage() {
                 return paragraphs.map((paragraph, index) => (
                   <p 
                     key={index} 
-                    className="mb-6 first:mt-0 last:mb-0 indent-8"
+                    className="mb-4 sm:mb-5 md:mb-6 first:mt-0 last:mb-0 indent-4 sm:indent-6 md:indent-8 leading-relaxed"
                   >
                     {paragraph}
                   </p>
@@ -508,18 +510,18 @@ export default function ChapterPage() {
 
           {/* Chapter Navigation */}
           {!isFullscreen && (
-            <nav className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mt-12 pt-8 border-t border-current border-opacity-10">
+            <nav className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 mt-6 sm:mt-8 md:mt-12 pt-4 sm:pt-6 md:pt-8 border-t border-current border-opacity-10">
               <div className="flex-1 min-w-0">
                 {chapter.prev_chapter ? (
                   <Link
                     href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}
-                    className="group block p-4 rounded-lg border border-current border-opacity-10 hover:border-opacity-30 transition-all"
+                    className="group block p-3 sm:p-4 rounded-lg border border-current border-opacity-10 hover:border-opacity-30 transition-all active:border-opacity-40"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <ChevronLeft className="h-5 w-5 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs opacity-60 mb-1">Previous Chapter</div>
-                        <div className="font-medium truncate group-hover:text-emerald-600 transition-colors">
+                        <div className="text-xs sm:text-xs opacity-60 mb-0.5 sm:mb-1">Previous Chapter</div>
+                        <div className="text-sm sm:text-base font-medium truncate group-hover:text-emerald-600 transition-colors">
                           {chapter.prev_chapter.title}
                         </div>
                       </div>
@@ -534,9 +536,9 @@ export default function ChapterPage() {
 
               <div className="md:px-4">
                 <Link href={`/novel/${novelSlug}`}>
-                  <Button variant="outline" className="w-full md:w-auto">
+                  <Button variant="outline" className="w-full md:w-auto text-sm">
                     <List className="h-4 w-4 mr-2" />
-                    Chapter List
+                    <span className="hidden xs:inline">Chapter </span>List
                   </Button>
                 </Link>
               </div>
@@ -570,14 +572,14 @@ export default function ChapterPage() {
 
       {/* Fullscreen Mode Controls */}
       {isFullscreen && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 z-20">
           <div
-            className={`flex items-center space-x-2 px-4 py-2 rounded-full shadow-lg ${getThemeClasses()}`}
+            className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-full shadow-lg ${getThemeClasses()}`}
           >
             {chapter.prev_chapter && (
               <Link href={`/novel/${novelSlug}/${chapter.prev_chapter.slug}`}>
-                <Button variant="ghost" size="sm">
-                  <ChevronLeft className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="h-10 w-10 sm:h-11 sm:w-11 p-0">
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </Link>
             )}
@@ -585,15 +587,16 @@ export default function ChapterPage() {
             <Button
               variant="ghost"
               size="sm"
+              className="h-10 w-10 sm:h-11 sm:w-11 p-0"
               onClick={() => setIsFullscreen(false)}
             >
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-5 w-5 sm:h-6 sm:w-6" />
             </Button>
 
             {chapter.next_chapter && (
               <Link href={`/novel/${novelSlug}/${chapter.next_chapter.slug}`}>
-                <Button variant="ghost" size="sm">
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="h-10 w-10 sm:h-11 sm:w-11 p-0">
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </Link>
             )}
