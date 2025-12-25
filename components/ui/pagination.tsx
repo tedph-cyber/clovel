@@ -79,63 +79,70 @@ const Pagination: React.FC<PaginationProps> = ({
   const pageNumbers = generatePageNumbers();
 
   return (
-    <nav className={cn('flex items-center justify-center space-x-1', className)}>
+    <nav
+      className={cn(
+        "flex items-center justify-center space-x-1 sm:space-x-1",
+        className
+      )}
+    >
       {showFirstLast && currentPage > 1 && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(1)}
-          className="px-2"
+          className="px-1.5 sm:px-2 text-xs sm:text-sm invisible lg:visible hidden xs:inline-flex"
         >
           First
         </Button>
       )}
-      
+
       {showPrevNext && currentPage > 1 && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
-          className="px-2"
+          className="px-1.5 sm:px-2 h-8 sm:h-9"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       )}
-      
+
       {pageNumbers.map((page, index) => (
         <React.Fragment key={index}>
-          {page === '...' ? (
-            <span className="px-3 py-2 text-gray-500">...</span>
+          {page === "..." ? (
+            <span className="px-1.5 sm:px-3 py-2 text-gray-500 text-xs sm:text-sm">
+              ...
+            </span>
           ) : (
             <Button
-              variant={currentPage === page ? 'default' : 'outline'}
+              variant={currentPage === page ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page as number)}
-              className="px-3"
+              className="px-2 sm:px-3 h-8 sm:h-9 text-xs sm:text-sm min-w-[32px] sm:min-w-[36px]"
             >
               {page}
             </Button>
           )}
         </React.Fragment>
       ))}
-      
+
       {showPrevNext && currentPage < totalPages && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
-          className="px-2"
+          className="px-1.5 sm:px-2 h-8 sm:h-9"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       )}
-      
+
       {showFirstLast && currentPage < totalPages && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(totalPages)}
-          className="px-2"
+          className="px-1.5 sm:px-2 text-xs sm:text-sm invisible lg:visible hidden xs:inline-flex"
         >
           Last
         </Button>

@@ -34,19 +34,22 @@ import {
 } from "@/lib/utils/formatters";
 import TetrisLoading from "@/components/ui/tetris-loader";
 import { getNovelBySlug, Novel } from "@/lib/db/novels";
-import { getChaptersByNovelSlug, Chapter } from "@/lib/db/chapters";
+import { getChaptersMetadataByNovelSlug, ChapterMetadata } from "@/lib/db/chapters";
+import { Pagination } from "@/components/ui/pagination";
 
 export default function NovelDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
 
   const [novel, setNovel] = useState<Novel | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [chapters, setChapters] = useState<ChapterMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isInReadingList, setIsInReadingList] = useState(false);
-  const [showAllChapters, setShowAllChapters] = useState(false);
+  const [currentChapterPage, setCurrentChapterPage] = useState(1);
+  const [pageJumpInput, setPageJumpInput] = useState("");
+  const chaptersPerPage = 50;
 
   useEffect(() => {
     const fetchNovelData = async () => {
@@ -54,10 +57,10 @@ export default function NovelDetailPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch novel details and chapters separately from Supabase
+        // Fetch novel details and chapter metadata (without content) from Supabase
         const [novelData, chaptersData] = await Promise.all([
           getNovelBySlug(slug),
-          getChaptersByNovelSlug(slug)
+          getChaptersMetadataByNovelSlug(slug)
         ]);
         
         if (!novelData) {
@@ -66,7 +69,7 @@ export default function NovelDetailPage() {
         }
 
         console.log('Novel data:', novelData); // Debug log
-        console.log('Chapters data:', chaptersData); // Debug log
+        console.log('Chapters metadata:', chaptersData.length, 'chapters loaded'); // Debug log
         setNovel(novelData);
         setChapters(chaptersData || []);
       } catch (err) {
@@ -105,11 +108,24 @@ export default function NovelDetailPage() {
     setIsInReadingList(!isInReadingList);
   };
 
+  const handlePageJump = () => {
+    const pageNum = parseInt(pageJumpInput);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalChapterPages) {
+      setCurrentChapterPage(pageNum);
+      setPageJumpInput("");
+      document.getElementById('chapters-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   if (!novel) {
     return null;
   }
 
-  const displayedChapters = showAllChapters ? chapters : chapters.slice(0, 10);
+  // Calculate pagination
+  const totalChapterPages = Math.ceil((novel.total_chapters || chapters.length) / chaptersPerPage);
+  const startIndex = (currentChapterPage - 1) * chaptersPerPage;
+  const endIndex = startIndex + chaptersPerPage;
+  const displayedChapters = chapters.slice(startIndex, endIndex);
 
   if (loading) {
     return (
@@ -226,13 +242,17 @@ export default function NovelDetailPage() {
                   <div className="text-xl sm:text-2xl font-bold text-purple-600">
                     {formatNumber(0)}
                   </div>
-                  <div className="text-xs sm:text-sm text-gray-600">Bookmarks</div>
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    Bookmarks
+                  </div>
                 </div>
                 <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
                   <div className="text-xl sm:text-2xl font-bold text-orange-600">
                     {formatReadingTime(0)}
                   </div>
-                  <div className="text-xs sm:text-sm text-gray-600">Read Time</div>
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    Read Time
+                  </div>
                 </div>
               </div>
 
@@ -281,15 +301,46 @@ export default function NovelDetailPage() {
           </Card>
 
           {/* Chapters List */}
-          <Card>
+          <Card id="chapters-section">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Chapters ({novel.total_chapters || 0})</CardTitle>
-                {chapters.length > 0 && (
-                  <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
-                    <Button>Start Reading</Button>
-                  </Link>
-                )}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <CardTitle>
+                  Chapters ({novel.total_chapters || 0})
+                  {chapters.length > chaptersPerPage && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      Page {currentChapterPage} of {totalChapterPages}
+                    </span>
+                  )}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  {totalChapterPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max={totalChapterPages}
+                        value={pageJumpInput}
+                        onChange={(e) => setPageJumpInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handlePageJump()}
+                        placeholder="Page"
+                        className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePageJump}
+                        disabled={!pageJumpInput}
+                      >
+                        Go
+                      </Button>
+                    </div>
+                  )}
+                  {chapters.length > 0 && (
+                    <Link href={`/novel/${novel.slug}/${chapters[0].slug}`}>
+                      <Button>Start Reading</Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -299,44 +350,60 @@ export default function NovelDetailPage() {
                   <p>No chapters available yet.</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {displayedChapters.map((chapter: Chapter) => (
-                    <Link
-                      key={chapter.id}
-                      href={`/novel/${novel.slug}/${chapter.slug}`}
-                      className="block p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">
-                            {chapter.title}
-                          </h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {formatReadingTime(chapter.word_count || 0)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(chapter.created_at)}
-                            </span>
+                <>
+                  <div className="space-y-2">
+                    {displayedChapters.map(
+                      (chapter: ChapterMetadata, index: number) => (
+                        <Link
+                          key={chapter.id}
+                          href={`/novel/${novel.slug}/${chapter.slug}`}
+                          className="block p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                {/* <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                  #{startIndex + index + 1}
+                                </span> */}
+                                <h3 className="font-medium text-gray-900">
+                                  {chapter.title}
+                                </h3>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {formatReadingTime(chapter.word_count || 0)}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {formatDate(chapter.created_at)}
+                                </span>
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-gray-400" />
                           </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </Link>
-                  ))}
+                        </Link>
+                      )
+                    )}
+                  </div>
 
-                  {chapters.length > 10 && !showAllChapters && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAllChapters(true)}
-                      className="w-full mt-4"
-                    >
-                      Show All {chapters.length} Chapters
-                    </Button>
+                  {/* Pagination */}
+                  {totalChapterPages > 1 && (
+                    <div className="flex justify-center mt-6">
+                      <Pagination
+                        currentPage={currentChapterPage}
+                        totalPages={totalChapterPages}
+                        onPageChange={(page) => {
+                          setCurrentChapterPage(page);
+                          // Scroll to top of chapters list
+                          document
+                            .getElementById("chapters-section")
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      />
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </CardContent>
           </Card>
